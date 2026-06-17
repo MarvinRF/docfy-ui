@@ -1,0 +1,237 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Sample API 3.1",
+    "version": "1.0.0",
+    "description": "Edge-case fixture for OpenAPI 3.1 — no requestBody, oneOf/anyOf, no declared errors, long description, unconstrained schema."
+  },
+  "tags": [
+    { "name": "payments", "description": "Payment operations" },
+    { "name": "health", "description": "Health checks" }
+  ],
+  "paths": {
+    "/health": {
+      "get": {
+        "operationId": "getHealth",
+        "summary": "Health check",
+        "tags": ["health"],
+        "responses": {
+          "200": {
+            "description": "Service is healthy",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HealthStatus"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+
+    "/payments/{id}": {
+      "get": {
+        "operationId": "getPayment",
+        "summary": "Get payment by id",
+        "description": "Fetches a single payment by its identifier. This endpoint is used heavily by the reconciliation job that runs every night at midnight UTC to cross-check our ledger against the payment processor's records, and it also backs the customer-facing transaction detail page, so response times here directly affect both an internal batch job's SLA and end-user perceived latency on the storefront.",
+        "tags": ["payments"],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Payment found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaymentMethod"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+
+    "/payments": {
+      "post": {
+        "operationId": "createPayment",
+        "summary": "Create payment",
+        "description": "Creates a new payment using one of the supported payment methods.",
+        "tags": ["payments"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "oneOf": [
+                  { "$ref": "#/components/schemas/CardPayment" },
+                  { "$ref": "#/components/schemas/PixPayment" }
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Payment created",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/PaymentMethod" }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            }
+          }
+        }
+      }
+    },
+
+    "/payments/{id}/refund": {
+      "post": {
+        "operationId": "refundPayment",
+        "summary": "Refund payment",
+        "description": "Refunds a payment in full. No request body needed — the payment id in the path is sufficient.",
+        "tags": ["payments"],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Refund processed",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/RefundResult" }
+              }
+            }
+          }
+        }
+      }
+    },
+
+    "/payments/{id}/metadata": {
+      "patch": {
+        "operationId": "patchPaymentMetadata",
+        "summary": "Patch payment metadata",
+        "description": "Attaches arbitrary metadata to a payment. No schema constraints are declared on purpose — callers may send any JSON object.",
+        "tags": ["payments"],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/Metadata" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Metadata updated",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Metadata" }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+
+  "components": {
+    "schemas": {
+      "HealthStatus": {
+        "type": "object",
+        "properties": {
+          "status": { "type": "string", "enum": ["ok", "degraded", "down"] },
+          "uptimeSeconds": { "type": "number" }
+        }
+      },
+
+      "CardPayment": {
+        "type": "object",
+        "required": ["method", "cardNumber", "amount"],
+        "properties": {
+          "method": { "type": "string", "const": "card" },
+          "cardNumber": { "type": "string", "minLength": 16, "maxLength": 16 },
+          "amount": { "type": "number", "minimum": 0.01 }
+        }
+      },
+
+      "PixPayment": {
+        "type": "object",
+        "required": ["method", "pixKey", "amount"],
+        "properties": {
+          "method": { "type": "string", "const": "pix" },
+          "pixKey": { "type": "string" },
+          "amount": { "type": "number", "minimum": 0.01 }
+        }
+      },
+
+      "PaymentMethod": {
+        "type": "object",
+        "description": "A processed payment, returned as either a card or pix payment.",
+        "required": ["id", "status"],
+        "properties": {
+          "id": { "type": "string", "format": "uuid" },
+          "status": { "type": "string", "enum": ["pending", "completed", "failed"] },
+          "detail": {
+            "anyOf": [
+              { "$ref": "#/components/schemas/CardPayment" },
+              { "$ref": "#/components/schemas/PixPayment" }
+            ]
+          },
+          "previous": {
+            "$ref": "#/components/schemas/PaymentMethod"
+          }
+        }
+      },
+
+      "RefundResult": {
+        "type": "object",
+        "properties": {
+          "refundId": { "type": "string", "format": "uuid" },
+          "refundedAmount": { "type": "number" }
+        }
+      },
+
+      "Metadata": {
+        "type": "object",
+        "additionalProperties": true
+      },
+
+      "ErrorResponse": {
+        "type": "object",
+        "properties": {
+          "success": { "type": "boolean" },
+          "message": { "type": "string" },
+          "errors": { "type": "array", "items": { "type": "string" } }
+        }
+      }
+    }
+  }
+}
