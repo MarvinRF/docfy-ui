@@ -25,12 +25,17 @@ export function ParametersSection({ parameters }: ParametersSectionProps) {
     <div>
       {groups.map((group) => (
         <div key={group.kind} className="mb-4">
-          <h3 className="mb-1 text-sm font-semibold tracking-wide uppercase opacity-70" style={{ color: 'var(--color-text)' }}>
+          <h3 className="mb-2 text-sm font-semibold tracking-wide uppercase opacity-70" style={{ color: 'var(--color-text)' }}>
             {GROUP_LABELS[group.kind]}
           </h3>
-          {group.items.map((param) => (
-            <ParameterRow key={param.name} parameter={param} />
-          ))}
+          <div
+            className="divide-y divide-[var(--color-border)] rounded-lg border shadow-sm"
+            style={{ borderColor: 'var(--color-border)', backgroundColor: 'var(--color-bg-elevated)' }}
+          >
+            {group.items.map((param) => (
+              <ParameterRow key={param.name} parameter={param} />
+            ))}
+          </div>
         </div>
       ))}
     </div>

@@ -20,7 +20,10 @@ export function ResponseCard({ response }: ResponseCardProps) {
   const nodes = schemaToTreeNodes(response.schema);
 
   return (
-    <div className="mb-3 rounded border p-3" style={{ borderColor: 'var(--color-border)' }}>
+    <div
+      className="mb-3 rounded-lg border p-3 shadow-sm transition-shadow duration-150 hover:shadow-md"
+      style={{ borderColor: 'var(--color-border)', backgroundColor: 'var(--color-bg-elevated)' }}
+    >
       <div className="mb-1 flex items-center gap-2">
         <span className={`rounded px-1.5 py-0.5 text-xs font-bold ${statusColorClass(response.status)}`}>{response.status}</span>
         {description && <span className="text-sm" style={{ color: 'var(--color-text)' }}>{description}</span>}

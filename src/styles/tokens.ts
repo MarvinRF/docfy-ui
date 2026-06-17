@@ -13,7 +13,7 @@ export const BASE_TOKENS: Record<
   ThemeName,
   { bg: string; text: string; accent: string }
 > = {
-  dark: { bg: "#4b4b4b", text: "#FFFAF3", accent: "#E95420" },
+  dark: { bg: "#15161A", text: "#FFFAF3", accent: "#E95420" },
   light: { bg: "#FFFAF3", text: "#080616", accent: "#E95420" },
 };
 

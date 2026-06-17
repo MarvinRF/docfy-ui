@@ -10,7 +10,7 @@ export function ParameterRow({ parameter }: ParameterRowProps) {
   const example = parameter.schema?.example;
 
   return (
-    <div className="border-b py-2 last:border-b-0" style={{ borderColor: 'var(--color-border)' }}>
+    <div className="px-3 py-2 transition-colors duration-100 hover:bg-white/5">
       <div className="flex items-center gap-2">
         <span className="font-mono text-sm font-medium" style={{ color: 'var(--color-text)' }}>{parameter.name}</span>
         <span className="text-xs opacity-60" style={{ color: 'var(--color-text)' }}>{type}</span>

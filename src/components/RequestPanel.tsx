@@ -1,13 +1,20 @@
-import { useState } from 'react';
-import type { Endpoint } from '../document-model/types';
-import { buildCodeSnippet, SNIPPET_LANGUAGES, type SnippetLang } from '../transformers/code-snippets';
-import { MethodBadge } from './MethodBadge';
-import { CopyButton } from './CopyButton';
+import { useState } from "react";
+import type { Endpoint } from "../document-model/types";
+import {
+  buildCodeSnippet,
+  SNIPPET_LANGUAGES,
+  type SnippetLang,
+} from "../transformers/code-snippets";
+import { MethodBadge } from "./MethodBadge";
+import { CopyButton } from "./CopyButton";
 
 export interface RequestPanelProps {
   endpoint: Endpoint;
   baseUrl: string;
 }
+
+/** Fixed snippet height — long bodies scroll instead of pushing the layout around. */
+const SNIPPET_HEIGHT = "h-30";
 
 /**
  * Request header + language-switchable code snippet + a disabled "Test
@@ -19,13 +26,32 @@ export function RequestPanel({ endpoint, baseUrl }: RequestPanelProps) {
   const snippet = buildCodeSnippet(endpoint, baseUrl, lang);
 
   return (
-    <div className="rounded border" style={{ borderColor: 'var(--color-border)', backgroundColor: 'var(--color-bg-elevated)' }}>
-      <div className="flex items-center gap-2 border-b p-3" style={{ borderColor: 'var(--color-border)' }}>
+    <div
+      className="overflow-hidden rounded-lg border shadow-sm"
+      style={{
+        borderColor: "var(--color-border)",
+        backgroundColor: "var(--color-bg-elevated)",
+      }}
+    >
+      <div
+        className="flex items-center gap-2 border-b p-3"
+        style={{ borderColor: "var(--color-border)" }}
+      >
         <MethodBadge method={endpoint.method} />
-        <span className="truncate font-mono text-sm" style={{ color: 'var(--color-text)' }}>{endpoint.path}</span>
+        <span
+          className="truncate font-mono text-sm"
+          style={{ color: "var(--color-text)" }}
+        >
+          {endpoint.path}
+        </span>
       </div>
 
-      <div role="tablist" aria-label="Snippet language" className="flex flex-wrap gap-1 border-b p-2" style={{ borderColor: 'var(--color-border)' }}>
+      <div
+        role="tablist"
+        aria-label="Snippet language"
+        className="flex flex-wrap gap-1 border-b p-2"
+        style={{ borderColor: "var(--color-border)" }}
+      >
         {SNIPPET_LANGUAGES.map((l) => (
           <button
             key={l.id}
@@ -33,10 +59,11 @@ export function RequestPanel({ endpoint, baseUrl }: RequestPanelProps) {
             role="tab"
             aria-selected={lang === l.id}
             onClick={() => setLang(l.id)}
-            className="rounded px-2 py-1 text-xs"
+            className="rounded px-2 py-1 text-xs transition-colors duration-150"
             style={{
-              backgroundColor: lang === l.id ? 'var(--color-accent)' : 'transparent',
-              color: lang === l.id ? '#FFFFFF' : 'var(--color-text)',
+              backgroundColor:
+                lang === l.id ? "var(--color-accent)" : "transparent",
+              color: lang === l.id ? "#FFFFFF" : "var(--color-text)",
             }}
           >
             {l.label}
@@ -44,18 +71,25 @@ export function RequestPanel({ endpoint, baseUrl }: RequestPanelProps) {
         ))}
       </div>
 
-      <pre className="overflow-x-auto p-3 text-xs" style={{ color: 'var(--color-text)' }}>
+      <pre
+        key={lang}
+        className={`themed-scroll animate-fade-in ${SNIPPET_HEIGHT} overflow-auto p-3 text-xs`}
+        style={{ color: "var(--color-text)" }}
+      >
         <code>{snippet}</code>
       </pre>
 
-      <div className="flex items-center justify-between gap-2 border-t p-3" style={{ borderColor: 'var(--color-border)' }}>
+      <div
+        className="flex items-center justify-between gap-2 border-t p-3"
+        style={{ borderColor: "var(--color-border)" }}
+      >
         <CopyButton text={snippet} label="Copy snippet" />
         <button
           type="button"
           disabled
           title="Coming soon — real request execution is not part of this MVP"
           className="cursor-not-allowed rounded px-3 py-1.5 text-sm font-medium opacity-50"
-          style={{ backgroundColor: 'var(--color-accent)', color: '#FFFFFF' }}
+          style={{ backgroundColor: "var(--color-accent)", color: "#FFFFFF" }}
         >
           Test Request
         </button>

@@ -48,15 +48,15 @@ describe("deriveSurfaceTokens()", () => {
   it("never introduces a new hue — bgElevated and border are pure mixes of bg and text", () => {
     // A mix of two grayscale-ish hex values stays within the bounding box
     // of the two channel values for every channel.
-    const { bgElevated, border } = deriveSurfaceTokens("#4b4b4b", "#FFFAF3");
+    const { bgElevated, border } = deriveSurfaceTokens("#15161A", "#FFFAF3");
     for (const token of [bgElevated, border]) {
       expect(token).toMatch(/^#[0-9a-f]{6}$/i);
     }
   });
 
   it("returns deterministic output for the same input", () => {
-    const a = deriveSurfaceTokens("#4b4b4b", "#FFFAF3");
-    const b = deriveSurfaceTokens("#4b4b4b", "#FFFAF3");
+    const a = deriveSurfaceTokens("#15161A", "#FFFAF3");
+    const b = deriveSurfaceTokens("#15161A", "#FFFAF3");
     expect(a).toEqual(b);
   });
 });
@@ -64,7 +64,7 @@ describe("deriveSurfaceTokens()", () => {
 describe("getThemeTokens()", () => {
   it("returns all 5 tokens for dark mode, accent unchanged from base", () => {
     const tokens = getThemeTokens("dark");
-    expect(tokens.bg).toBe("#4b4b4b");
+    expect(tokens.bg).toBe("#15161A");
     expect(tokens.text).toBe("#FFFAF3");
     expect(tokens.accent).toBe("#E95420");
     expect(tokens.bgElevated).toMatch(/^#[0-9a-f]{6}$/i);

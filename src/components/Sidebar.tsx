@@ -26,7 +26,7 @@ export function Sidebar({ tagGroups }: SidebarProps) {
   }
 
   return (
-    <nav aria-label="Endpoints" className="h-full overflow-y-auto p-3" style={{ backgroundColor: 'var(--color-bg-elevated)' }}>
+    <nav aria-label="Endpoints" className="themed-scroll h-full overflow-y-auto p-3">
       {tagGroups.map((group) => {
         const isCollapsed = collapsed.has(group.name);
         return (
@@ -35,15 +35,15 @@ export function Sidebar({ tagGroups }: SidebarProps) {
               type="button"
               onClick={() => toggle(group.name)}
               aria-expanded={!isCollapsed}
-              className="flex w-full items-center justify-between rounded px-2 py-1.5 text-left text-sm font-semibold tracking-wide uppercase"
+              className="flex w-full items-center justify-between rounded px-2 py-1.5 text-left text-sm font-semibold tracking-wide uppercase transition-colors duration-100 hover:bg-white/5"
               style={{ color: 'var(--color-text)' }}
             >
               <span>{group.name}</span>
-              <span aria-hidden="true">{isCollapsed ? '▸' : '▾'}</span>
+              <span aria-hidden="true" className={`inline-block transition-transform duration-150 ${isCollapsed ? '-rotate-90' : 'rotate-0'}`}>▾</span>
             </button>
 
             {!isCollapsed && (
-              <ul>
+              <ul className="animate-collapse-in">
                 {group.endpoints.map((endpoint) => {
                   const id = endpointId(endpoint);
                   const isActive = id === activeOperationId;
@@ -51,10 +51,16 @@ export function Sidebar({ tagGroups }: SidebarProps) {
                     <li key={`${group.name}-${endpoint.method}-${endpoint.path}`}>
                       <Link
                         to={`/${encodeURIComponent(group.name)}/${encodeURIComponent(id)}`}
-                        className="flex items-center gap-2 rounded px-2 py-1 text-sm"
+                        className="flex items-center gap-2 rounded px-2 py-1 text-sm transition-colors duration-100"
                         style={{
                           backgroundColor: isActive ? 'var(--color-accent)' : 'transparent',
                           color: isActive ? '#FFFFFF' : 'var(--color-text)',
+                        }}
+                        onMouseEnter={(e) => {
+                          if (!isActive) e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.06)';
+                        }}
+                        onMouseLeave={(e) => {
+                          if (!isActive) e.currentTarget.style.backgroundColor = 'transparent';
                         }}
                       >
                         <MethodBadge method={endpoint.method} />

@@ -13,7 +13,7 @@ describe("applyTheme()", () => {
     const root = document.createElement("html");
     applyTheme("dark", root);
 
-    expect(root.style.getPropertyValue("--color-bg")).toBe("#4b4b4b");
+    expect(root.style.getPropertyValue("--color-bg")).toBe("#15161A");
     expect(root.style.getPropertyValue("--color-text")).toBe("#FFFAF3");
     expect(root.style.getPropertyValue("--color-accent")).toBe("#E95420");
     expect(root.style.getPropertyValue("--color-bg-elevated")).toMatch(

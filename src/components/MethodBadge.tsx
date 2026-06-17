@@ -1,12 +1,12 @@
 const METHOD_COLORS: Record<string, string> = {
-  GET: 'bg-blue-500/15 text-blue-400',
-  POST: 'bg-green-500/15 text-green-400',
-  PUT: 'bg-yellow-500/15 text-yellow-400',
-  PATCH: 'bg-yellow-500/15 text-yellow-400',
-  DELETE: 'bg-red-500/15 text-red-400',
+  GET: 'bg-blue-500/20 text-blue-400',
+  POST: 'bg-green-500/20 text-green-400',
+  PUT: 'bg-yellow-500/20 text-yellow-400',
+  PATCH: 'bg-yellow-500/20 text-yellow-400',
+  DELETE: 'bg-red-500/20 text-red-400',
 };
 
-const DEFAULT_COLOR = 'bg-gray-500/15 text-gray-400';
+const DEFAULT_COLOR = 'bg-gray-500/20 text-gray-400';
 
 export interface MethodBadgeProps {
   method: string;

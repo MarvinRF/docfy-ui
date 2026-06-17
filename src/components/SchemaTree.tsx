@@ -22,7 +22,7 @@ function TreeNode({ node, depth }: { node: SchemaTreeNode; depth: number }) {
   return (
     <li>
       <div
-        className="flex items-center gap-2 py-1"
+        className="group flex items-center gap-2 rounded py-1 transition-colors duration-100 hover:bg-white/5"
         style={{ paddingLeft: depth * 16, color: 'var(--color-text)' }}
       >
         {hasChildren ? (
@@ -31,21 +31,25 @@ function TreeNode({ node, depth }: { node: SchemaTreeNode; depth: number }) {
             onClick={() => setExpanded((e) => !e)}
             aria-expanded={expanded}
             aria-label={`Toggle ${node.name}`}
-            className="w-4 shrink-0 text-xs opacity-70"
+            className={`w-4 shrink-0 text-xs opacity-70 transition-transform duration-150 ${expanded ? 'rotate-0' : '-rotate-90'}`}
           >
-            {expanded ? '▾' : '▸'}
+            ▾
           </button>
         ) : (
           <span className="w-4 shrink-0" />
         )}
         <span className="font-mono text-sm">{node.name}</span>
         <span className={`text-xs ${TYPE_COLOR[node.type] ?? 'text-gray-400'}`}>{node.type}</span>
-        {node.required && <span className="text-xs opacity-60">required</span>}
-        {node.nullable && <span className="text-xs opacity-60">nullable</span>}
+        {node.required && (
+          <span className="rounded px-1 text-[10px] font-medium" style={{ backgroundColor: 'var(--color-accent)', color: '#FFFFFF' }}>
+            required
+          </span>
+        )}
+        {node.nullable && <span className="text-xs opacity-50">nullable</span>}
       </div>
 
       {hasChildren && expanded && (
-        <ul>
+        <ul className="animate-collapse-in ml-2 border-l" style={{ borderColor: 'var(--color-border)' }}>
           {node.children!.map((child) => (
             <TreeNode key={child.name} node={child} depth={depth + 1} />
           ))}

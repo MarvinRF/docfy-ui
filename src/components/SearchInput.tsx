@@ -12,7 +12,7 @@ export function SearchInput({ value, onChange }: SearchInputProps) {
       onChange={(e) => onChange(e.target.value)}
       placeholder="Search endpoints..."
       aria-label="Search endpoints"
-      className="w-full rounded-md border px-3 py-1.5 text-sm outline-none focus:ring-1"
+      className="w-full rounded-md border px-3 py-1.5 text-sm shadow-sm outline-none transition-shadow duration-150 focus:ring-2 focus:ring-[var(--color-accent)]"
       style={{
         backgroundColor: 'var(--color-bg-elevated)',
         borderColor: 'var(--color-border)',

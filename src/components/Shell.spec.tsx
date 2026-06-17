@@ -74,4 +74,16 @@ describe('<Shell />', () => {
     expect(useThemeStore.getState().theme).toBe('light');
     expect(screen.getByRole('button', { name: /dark mode/i })).toBeInTheDocument();
   });
+
+  it('opens the mobile sidebar drawer via the hamburger button, with a backdrop to close it', async () => {
+    const user = userEvent.setup();
+    renderShell('/');
+
+    await user.click(screen.getByRole('button', { name: 'Open menu' }));
+    const backdrop = screen.getByTestId('sidebar-backdrop');
+    expect(backdrop).toBeInTheDocument();
+
+    await user.click(backdrop);
+    expect(screen.queryByTestId('sidebar-backdrop')).not.toBeInTheDocument();
+  });
 });

@@ -1,5 +1,44 @@
 @import "tailwindcss";
 
+/* Tailwind v4 CSS-first theme: any --animate-* key here becomes an
+   `animate-*` utility class automatically — no plugin needed. */
+@theme {
+  --animate-fade-in: fade-in 180ms ease-out;
+  --animate-slide-in: slide-in 200ms ease-out;
+  --animate-collapse-in: collapse-in 150ms ease-out;
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(2px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slide-in {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+@keyframes collapse-in {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 :root {
   color-scheme: light dark;
 }
@@ -15,4 +54,28 @@ body {
   background-color: var(--color-bg);
   color: var(--color-text);
   font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+
+/* Thin, theme-aware scrollbars for the panels that get a fixed height + overflow. */
+.themed-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-border) transparent;
+}
+
+.themed-scroll::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.themed-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.themed-scroll::-webkit-scrollbar-thumb {
+  background-color: var(--color-border);
+  border-radius: 8px;
+}
+
+.themed-scroll::-webkit-scrollbar-thumb:hover {
+  background-color: var(--color-accent);
 }
