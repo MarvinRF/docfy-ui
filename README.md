@@ -24,9 +24,25 @@ Pure function `operationToAiText(endpoint)` — turns a normalized `Endpoint` in
   2. **`required` does not produce its own Validation line** — the worked example shows zero "X is required" lines for a register endpoint where required fields are near-certain, so presence is conveyed by the field appearing in the Request example, not a separate line.
 - Section join uses a single newline between sections (matching the literal worked example), not the blank line the spec's prose mentions — the two contradict each other; we matched the testable example.
 
+## Phase 3 — UI shell
+
+React 19 + Vite 8 + Tailwind 4 + React Router 7 + Zustand. No endpoint detail rendering or Copy buttons yet — that's Phase 4.
+
+- `src/styles/tokens.ts` — `getThemeTokens(theme)` / `deriveSurfaceTokens(bg, text)`, pure functions implementing spec section 4.1 (the 3 base tokens, plus derived `bgElevated`/`border` by mixing `bg` toward `text`, never introducing a new hue).
+- `src/styles/apply-theme.ts` — sets the CSS custom properties + `data-theme` on `<html>`; no reload needed to switch themes.
+- `src/state/theme-store.ts` — Zustand store, persists the chosen theme to `localStorage`.
+- `src/document-model/filter.ts` — `filterTagGroups(groups, query)`, the client-side search (substring match on path/summary/operationId, no debounce).
+- `src/hooks/use-openapi-spec.ts` — fetches the spec from a URL (default `/api-json`, override via `?spec=<url>`) and runs it through `normalizeDocument`.
+- `src/components/` — `Sidebar` (collapsible tag sections, method-color badges), `SearchInput`, `MethodBadge`, `Shell` (layout + theme toggle + routing), `EndpointPlaceholder` (Phase 3 stand-in for the real detail panel).
+
+**Known gap to verify in Phase 5**: `npm run build` succeeds, but Vite/Rolldown logs warnings about `path`/`util` being externalized from `@apidevtools/swagger-parser`'s dependency chain. The package declares a `browser` field specifically to avoid this, so it's worth a real browser smoke test against a running NestJS app's `/api-json` before considering this fully resolved.
+
 ## Scripts
 
 ```bash
-npm test         # run the test suite (vitest)
+npm run dev        # start the Vite dev server
+npm run build       # typecheck + production build
+npm run preview     # preview the production build
+npm test            # run the test suite (vitest)
 npm run typecheck
 ```
