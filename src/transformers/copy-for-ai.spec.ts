@@ -195,6 +195,22 @@ describe('operationToAiText()', () => {
     expect(text).not.toContain('Success Response (201):');
   });
 
+  it('falls back to "No content" when a schema-less success response has an empty-string description (real-world @nestjs/swagger default)', () => {
+    const endpoint = baseEndpoint({
+      responses: [{ status: '201', description: '', contentType: undefined, schema: undefined }],
+    });
+    const text = operationToAiText(endpoint);
+    expect(text).toContain('Success Response (201):\nNo content');
+  });
+
+  it('falls back to the status text when an error response has an empty-string description', () => {
+    const endpoint = baseEndpoint({
+      responses: [{ status: '404', description: '', contentType: undefined, schema: undefined }],
+    });
+    const text = operationToAiText(endpoint);
+    expect(text).toContain('404 Not Found');
+  });
+
   it('omits Validation entirely when the request schema has no constraints beyond types', () => {
     const endpoint = baseEndpoint({
       method: 'POST',

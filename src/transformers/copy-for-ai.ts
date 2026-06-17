@@ -82,7 +82,7 @@ function formatParameterLine(param: ParameterInfo): string {
 function buildErrorResponseLines(responses: Endpoint['responses']): string[] {
   return responses
     .filter((r) => /^[45]\d\d$/.test(r.status))
-    .map((r) => `${r.status} ${r.description ?? STATUS_TEXT[r.status] ?? ''}`.trim());
+    .map((r) => `${r.status} ${r.description || STATUS_TEXT[r.status] || ''}`.trim());
 }
 
 /**
@@ -126,7 +126,7 @@ export function operationToAiText(endpoint: Endpoint): string {
   const success = pickPrimarySuccessResponse(endpoint.responses);
   if (success) {
     const result = buildSchemaExample(success.schema);
-    const body = result ? withUnionNotes(result.json, result.unionSizes) : (success.description ?? 'No content');
+    const body = result ? withUnionNotes(result.json, result.unionSizes) : (success.description || 'No content');
     sections.push(`Success Response (${success.status}):\n${body}`);
   }
 

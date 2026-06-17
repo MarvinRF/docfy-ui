@@ -16,7 +16,7 @@ function statusColorClass(status: string): string {
 
 /** One response status: code badge, description, content-type, navigable schema. */
 export function ResponseCard({ response }: ResponseCardProps) {
-  const description = response.description ?? STATUS_TEXT[response.status];
+  const description = response.description || STATUS_TEXT[response.status];
   const nodes = schemaToTreeNodes(response.schema);
 
   return (
