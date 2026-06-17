@@ -4,13 +4,15 @@
   "private": true,
   "type": "module",
   "description": "AI-first OpenAPI documentation UI — companion project to nestjs-docfy",
+  "files": ["dist"],
   "scripts": {
     "dev": "vite",
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "prepublishOnly": "npm run build"
   },
   "devDependencies": {
     "@tailwindcss/vite": "^4.3.1",
