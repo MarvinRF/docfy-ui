@@ -5,7 +5,7 @@ import { filterTagGroups } from '../document-model/filter';
 import { useThemeStore } from '../state/theme-store';
 import { Sidebar } from './Sidebar';
 import { SearchInput } from './SearchInput';
-import { EndpointPlaceholder } from './EndpointPlaceholder';
+import { EndpointRoute } from './EndpointRoute';
 import { EmptyState } from './EmptyState';
 
 export interface ShellProps {
@@ -42,7 +42,7 @@ export function Shell({ tagGroups }: ShellProps) {
         </div>
 
         <Routes>
-          <Route path="/:tag/:operationId" element={<EndpointPlaceholder tagGroups={tagGroups} />} />
+          <Route path="/:tag/:operationId" element={<EndpointRoute tagGroups={tagGroups} />} />
           <Route path="*" element={<EmptyState />} />
         </Routes>
       </main>

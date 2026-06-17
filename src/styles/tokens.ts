@@ -1,4 +1,4 @@
-export type ThemeName = 'dark' | 'light';
+export type ThemeName = "dark" | "light";
 
 export interface ThemeTokens {
   bg: string;
@@ -9,13 +9,16 @@ export interface ThemeTokens {
 }
 
 /** Base tokens from spec section 4.1 — do not derive these, they're fixed design decisions. */
-export const BASE_TOKENS: Record<ThemeName, { bg: string; text: string; accent: string }> = {
-  dark: { bg: '#393E46', text: '#FFFAF3', accent: '#E95420' },
-  light: { bg: '#FFFAF3', text: '#080616', accent: '#E95420' },
+export const BASE_TOKENS: Record<
+  ThemeName,
+  { bg: string; text: string; accent: string }
+> = {
+  dark: { bg: "#4b4b4b", text: "#FFFAF3", accent: "#E95420" },
+  light: { bg: "#FFFAF3", text: "#080616", accent: "#E95420" },
 };
 
 function hexToRgb(hex: string): [number, number, number] {
-  const clean = hex.replace('#', '');
+  const clean = hex.replace("#", "");
   const r = parseInt(clean.slice(0, 2), 16);
   const g = parseInt(clean.slice(2, 4), 16);
   const b = parseInt(clean.slice(4, 6), 16);
@@ -23,7 +26,10 @@ function hexToRgb(hex: string): [number, number, number] {
 }
 
 function rgbToHex(r: number, g: number, b: number): string {
-  const toHex = (n: number) => Math.round(Math.min(255, Math.max(0, n))).toString(16).padStart(2, '0');
+  const toHex = (n: number) =>
+    Math.round(Math.min(255, Math.max(0, n)))
+      .toString(16)
+      .padStart(2, "0");
   return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
 }
 
@@ -45,7 +51,10 @@ function mix(bg: string, text: string, ratio: number): string {
  * darkens them in light mode (bg light, text dark), giving the sidebar
  * and cards visual separation from the page background in both themes.
  */
-export function deriveSurfaceTokens(bg: string, text: string): { bgElevated: string; border: string } {
+export function deriveSurfaceTokens(
+  bg: string,
+  text: string,
+): { bgElevated: string; border: string } {
   return {
     bgElevated: mix(bg, text, 0.06),
     border: mix(bg, text, 0.16),

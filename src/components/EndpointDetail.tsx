@@ -1,0 +1,54 @@
+import type { Endpoint } from '../document-model/types';
+import { capDepth } from '../document-model/cap-depth';
+import { pickPrimarySuccessResponse } from '../document-model/example';
+import { operationToAiText } from '../transformers/copy-for-ai';
+import { OperationHeader } from './OperationHeader';
+import { ParametersSection } from './ParametersSection';
+import { ResponsesSection } from './ResponsesSection';
+import { RequestPanel } from './RequestPanel';
+import { ResponseViewer } from './ResponseViewer';
+import { CopyButton } from './CopyButton';
+
+export interface EndpointDetailProps {
+  endpoint: Endpoint;
+  baseUrl: string;
+}
+
+/**
+ * Scalar-inspired two-column endpoint view: left column is documentation
+ * (header, parameters, responses with a navigable schema tree), right
+ * column is a playground-style panel (code snippets + a disabled "Test
+ * Request" button — real execution is out of scope for this MVP, see the
+ * implementation plan).
+ */
+export function EndpointDetail({ endpoint, baseUrl }: EndpointDetailProps) {
+  const openApiJson = JSON.stringify(capDepth(endpoint), null, 2);
+  const aiText = operationToAiText(endpoint);
+  const primarySuccess = pickPrimarySuccessResponse(endpoint.responses);
+
+  return (
+    <div className="grid gap-6 lg:grid-cols-2">
+      <div>
+        <div className="mb-4 flex gap-2">
+          <CopyButton text={openApiJson} label="Copy OpenAPI" />
+          <CopyButton text={aiText} label="Copy for AI" />
+        </div>
+
+        <OperationHeader endpoint={endpoint} />
+
+        <div className="mt-4">
+          <ParametersSection parameters={endpoint.parameters} />
+        </div>
+
+        <div className="mt-4">
+          <ResponsesSection responses={endpoint.responses} />
+        </div>
+      </div>
+
+      <div className="flex flex-col gap-4">
+        <RequestPanel endpoint={endpoint} baseUrl={baseUrl} />
+        <ResponseViewer response={primarySuccess} />
+      </div>
+    </div>
+  );
+}

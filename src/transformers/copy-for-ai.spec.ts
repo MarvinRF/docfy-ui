@@ -231,6 +231,20 @@ describe('operationToAiText()', () => {
     expect(text).toContain('- role must be one of: admin, member');
   });
 
+  it('does not stack-overflow on a circular schema (recursive DTO) — regression', () => {
+    const recursive: Record<string, unknown> = { type: 'object', properties: {} };
+    (recursive.properties as Record<string, unknown>).parent = recursive;
+    (recursive.properties as Record<string, unknown>).name = { type: 'string', minLength: 1 };
+
+    const endpoint = baseEndpoint({
+      method: 'POST',
+      requestBody: { required: true, contentType: 'application/json', schema: recursive as never },
+    });
+
+    expect(() => operationToAiText(endpoint)).not.toThrow();
+    expect(operationToAiText(endpoint)).toContain('name min length 1');
+  });
+
   it('runs well under 5ms (pure string formatting, no I/O)', () => {
     const endpoint = baseEndpoint({
       method: 'POST',

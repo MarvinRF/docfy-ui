@@ -46,9 +46,10 @@ describe('<Shell />', () => {
     expect(screen.getByText(/select an endpoint/i)).toBeInTheDocument();
   });
 
-  it('renders the endpoint placeholder when navigating to /:tag/:operationId', () => {
+  it('renders the endpoint detail when navigating to /:tag/:operationId', () => {
     renderShell('/users/findAllUsers');
-    expect(screen.getByRole('heading', { name: /GET \/users/i })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'List all users' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Copy for AI' })).toBeInTheDocument();
   });
 
   it('search filters the sidebar to matching endpoints only', async () => {
