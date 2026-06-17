@@ -62,4 +62,21 @@ describe('<SchemaTree />', () => {
     render(<SchemaTree nodes={nodes} />);
     expect(screen.getByText('customers[]')).toBeInTheDocument();
   });
+
+  it('shows a "circular" marker, with no expand toggle, for a recursive node', () => {
+    const recursive = { type: 'object', properties: { id: { type: 'string' } } } as Record<string, unknown>;
+    (recursive.properties as Record<string, unknown>).parent = recursive;
+
+    // Root-level nodes (depth 0) are expanded by default, so the outer
+    // "parent" node's own children — including the circular nested
+    // "parent" — are visible without any click.
+    const nodes = schemaToTreeNodes(recursive as never);
+    render(<SchemaTree nodes={nodes} />);
+
+    // Outer "parent" has a disclosure button (it has children); the
+    // nested, circular "parent" doesn't (nothing to expand).
+    const toggles = screen.getAllByRole('button', { name: /toggle parent/i });
+    expect(toggles).toHaveLength(1);
+    expect(screen.getByText('↩ circular')).toBeInTheDocument();
+  });
 });

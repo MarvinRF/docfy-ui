@@ -40,6 +40,11 @@ function TreeNode({ node, depth }: { node: SchemaTreeNode; depth: number }) {
         )}
         <span className="font-mono text-sm">{node.name}</span>
         <span className={`text-xs ${TYPE_COLOR[node.type] ?? 'text-gray-400'}`}>{node.type}</span>
+        {node.circular && (
+          <span className="text-xs italic opacity-50" title="Recursive reference — already shown above">
+            ↩ circular
+          </span>
+        )}
         {node.required && (
           <span className="rounded px-1 text-[10px] font-medium" style={{ backgroundColor: 'var(--color-accent)', color: '#FFFFFF' }}>
             required

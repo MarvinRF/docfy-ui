@@ -29,20 +29,27 @@ function buildPurpose(endpoint: Endpoint): string | undefined {
  * Request example, so a separate "required" line would be redundant
  * noise for the AI consumer. Reproduced exactly against that example.
  *
- * `depth` caps recursion into nested objects — dereferenced schemas can
- * be real object cycles (recursive DTOs), same hazard `capDepth()` guards
- * against elsewhere. Without this cap, a recursive DTO crashes the
- * browser tab with a stack overflow on every "Copy for AI" click.
+ * `ancestors` tracks resolved schema objects on the current recursion
+ * path by identity — dereferenced schemas can be real object cycles
+ * (recursive DTOs). Unlike a plain depth cap (which used to unroll the
+ * cycle ~10 times, producing duplicated "parent.parent...x10 email must
+ * be valid" lines), stopping the moment a schema repeats means a
+ * recursive property contributes at most one pass of rules — its own
+ * rules already cover what the cycle would otherwise repeat.
  */
-function extractValidationRules(schema: JSONSchemaLike | undefined, prefix = '', depth = 0): string[] {
-  if (depth > 10) return [];
-
+function extractValidationRules(
+  schema: JSONSchemaLike | undefined,
+  prefix = '',
+  ancestors: Set<JSONSchemaLike> = new Set(),
+): string[] {
   const { schema: resolved } = resolveUnion(schema);
   if (!resolved) return [];
+  if (ancestors.has(resolved)) return [];
 
   const properties = (resolved.properties as Record<string, JSONSchemaLike>) ?? {};
   const rules: string[] = [];
 
+  ancestors.add(resolved);
   for (const [key, rawPropSchema] of Object.entries(properties)) {
     const name = prefix ? `${prefix}.${key}` : key;
     const { schema: prop } = resolveUnion(rawPropSchema);
@@ -57,9 +64,10 @@ function extractValidationRules(schema: JSONSchemaLike | undefined, prefix = '',
     if (Array.isArray(prop.enum)) rules.push(`${name} must be one of: ${(prop.enum as unknown[]).join(', ')}`);
 
     if (prop.type === 'object' && prop.properties) {
-      rules.push(...extractValidationRules(prop, name, depth + 1));
+      rules.push(...extractValidationRules(prop, name, ancestors));
     }
   }
+  ancestors.delete(resolved);
 
   return rules;
 }

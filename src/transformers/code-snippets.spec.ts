@@ -109,4 +109,18 @@ describe('buildCodeSnippet()', () => {
     expect(snippet).toContain(`curl_init('https://api.example.com/users')`);
     expect(snippet).toContain(`CURLOPT_CUSTOMREQUEST, 'GET'`);
   });
+
+  it('collapses a circular request body (recursive DTO) to a short marker, not a stack overflow', () => {
+    const user: Record<string, unknown> = { type: 'object', properties: { id: { type: 'string' } } };
+    (user.properties as Record<string, unknown>).parent = user;
+
+    const endpoint = baseEndpoint({
+      method: 'POST',
+      requestBody: { required: true, contentType: 'application/json', schema: user as never },
+    });
+
+    expect(() => buildCodeSnippet(endpoint, 'https://api.example.com', 'curl')).not.toThrow();
+    const snippet = buildCodeSnippet(endpoint, 'https://api.example.com', 'curl');
+    expect(snippet).toContain('"parent": "(circular reference)"');
+  });
 });

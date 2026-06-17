@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { schemaToTreeNodes } from './schema-tree';
+import type { JSONSchemaLike } from './types';
 
 describe('schemaToTreeNodes()', () => {
   it('returns an empty array for an undefined schema', () => {
@@ -110,5 +111,86 @@ describe('schemaToTreeNodes()', () => {
     expect(nodes[0].name).toBe('data');
     const dataChildren = nodes[0].children!;
     expect(dataChildren.map((n) => n.name)).toEqual(['customers[]', 'message', 'success']);
+  });
+
+  describe('circular schemas (recursive DTOs)', () => {
+    it('shows the recursive property one level deep, then flags the next repeat as circular', () => {
+      const user: JSONSchemaLike = { type: 'object', properties: { id: { type: 'string' } } };
+      (user.properties as Record<string, unknown>).parent = user;
+
+      const nodes = schemaToTreeNodes(user);
+      const parentNode = nodes.find((n) => n.name === 'parent')!;
+      expect(parentNode.circular).toBeUndefined();
+      expect(parentNode.children!.map((n) => n.name)).toEqual(['id', 'parent']);
+
+      const nestedParent = parentNode.children!.find((n) => n.name === 'parent')!;
+      expect(nestedParent.circular).toBe(true);
+      expect(nestedParent.children).toBeUndefined();
+    });
+
+    it('handles mutual recursion (A -> B -> A) without infinite recursion', () => {
+      const a: JSONSchemaLike = { type: 'object', properties: {} };
+      const b: JSONSchemaLike = { type: 'object', properties: { a } };
+      (a.properties as Record<string, unknown>).b = b;
+
+      expect(() => schemaToTreeNodes(a)).not.toThrow();
+      const nodes = schemaToTreeNodes(a);
+      const bNode = nodes.find((n) => n.name === 'b')!;
+      // a -> b (shown) -> a (one level deep, shown) -> b (circular, stops here)
+      const aInsideB = bNode.children!.find((n) => n.name === 'a')!;
+      expect(aInsideB.circular).toBeUndefined();
+      const bInsideA = aInsideB.children!.find((n) => n.name === 'b')!;
+      expect(bInsideA.circular).toBe(true);
+      expect(bInsideA.children).toBeUndefined();
+    });
+
+    it('detects a self-referencing array item (Category.children: Category[])', () => {
+      const category: JSONSchemaLike = { type: 'object', properties: { name: { type: 'string' } } };
+      (category.properties as Record<string, unknown>).children = { type: 'array', items: category };
+
+      const nodes = schemaToTreeNodes(category);
+      const childrenNode = nodes.find((n) => n.name === 'children[]')!;
+      expect(childrenNode.circular).toBeUndefined();
+
+      const nestedChildren = childrenNode.children!.find((n) => n.name === 'children[]')!;
+      expect(nestedChildren.circular).toBe(true);
+      expect(nestedChildren.children).toBeUndefined();
+    });
+
+    it('catches two distinct array properties pointing at the same recursive type without an extra level', () => {
+      const category: JSONSchemaLike = { type: 'object', properties: { name: { type: 'string' } } };
+      (category.properties as Record<string, unknown>).children = { type: 'array', items: category };
+      (category.properties as Record<string, unknown>).related = { type: 'array', items: category };
+
+      const nodes = schemaToTreeNodes(category);
+      const childrenNode = nodes.find((n) => n.name === 'children[]')!;
+      const relatedInsideChildren = childrenNode.children!.find((n) => n.name === 'related[]')!;
+      expect(relatedInsideChildren.circular).toBe(true);
+      expect(relatedInsideChildren.children).toBeUndefined();
+    });
+
+    it('does NOT flag the same schema object appearing in two sibling branches as circular', () => {
+      const role: JSONSchemaLike = { type: 'object', properties: { name: { type: 'string' } } };
+      const nodes = schemaToTreeNodes({
+        type: 'object',
+        properties: { createdBy: role, updatedBy: role },
+      });
+
+      expect(nodes.find((n) => n.name === 'createdBy')!.circular).toBeUndefined();
+      expect(nodes.find((n) => n.name === 'updatedBy')!.circular).toBeUndefined();
+      expect(nodes.find((n) => n.name === 'createdBy')!.children).toEqual([
+        { name: 'name', type: 'string', required: false, nullable: false },
+      ]);
+    });
+
+    it('detects a cycle hidden behind oneOf/anyOf', () => {
+      const user: JSONSchemaLike = { type: 'object', properties: { id: { type: 'string' } } };
+      (user.properties as Record<string, unknown>).parent = { oneOf: [user] };
+
+      const nodes = schemaToTreeNodes(user);
+      const parentNode = nodes.find((n) => n.name === 'parent')!;
+      const nestedParent = parentNode.children!.find((n) => n.name === 'parent')!;
+      expect(nestedParent.circular).toBe(true);
+    });
   });
 });

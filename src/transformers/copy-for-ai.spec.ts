@@ -245,6 +245,71 @@ describe('operationToAiText()', () => {
     expect(operationToAiText(endpoint)).toContain('name min length 1');
   });
 
+  describe('circular schemas — full reproduction of the reported bug (User.parent: User)', () => {
+    function makeRecursiveUserResponse() {
+      const user: Record<string, unknown> = {
+        type: 'object',
+        properties: {
+          id: { type: 'string' },
+          name: { type: 'string' },
+          email: { type: 'string', format: 'email' },
+          role: { type: 'string' },
+          createdAt: { type: 'string' },
+          updatedAt: { type: 'string' },
+        },
+      };
+      (user.properties as Record<string, unknown>).parent = user;
+
+      return {
+        type: 'object',
+        properties: {
+          data: { type: 'array', items: user },
+          meta: {
+            type: 'object',
+            properties: { page: { type: 'integer' }, limit: { type: 'integer' }, total: { type: 'integer' } },
+          },
+        },
+      };
+    }
+
+    it('collapses the recursive User.parent chain to a single short marker instead of 8+ repeated levels', () => {
+      const endpoint = baseEndpoint({
+        method: 'GET',
+        path: '/users',
+        responses: [{ status: '200', description: 'Users found successfully', contentType: 'application/json', schema: makeRecursiveUserResponse() as never }],
+      });
+
+      const text = operationToAiText(endpoint);
+
+      // The whole point of the fix: no wall of duplicated nesting.
+      expect(text).toContain('"parent": "(circular reference)"');
+      expect(text.match(/"email": "string"/g)).toHaveLength(1);
+      expect(text).not.toContain('"object"'); // the old bug: depth-capped leaves mislabeled as "object"
+    });
+
+    it('does not duplicate validation rules for fields repeated across the (now-collapsed) cycle', () => {
+      const endpoint = baseEndpoint({
+        method: 'POST',
+        requestBody: { required: true, contentType: 'application/json', schema: makeRecursiveUserResponse().properties.data.items as never },
+      });
+
+      const text = operationToAiText(endpoint);
+      expect(text.match(/email must be valid/g)).toHaveLength(1);
+    });
+
+    it('stays well under 5ms even for a circular schema (no quadratic blowup from the fix)', () => {
+      const endpoint = baseEndpoint({
+        method: 'GET',
+        responses: [{ status: '200', description: 'OK', contentType: 'application/json', schema: makeRecursiveUserResponse() as never }],
+      });
+
+      const start = performance.now();
+      operationToAiText(endpoint);
+      const elapsed = performance.now() - start;
+      expect(elapsed).toBeLessThan(50);
+    });
+  });
+
   it('runs well under 5ms (pure string formatting, no I/O)', () => {
     const endpoint = baseEndpoint({
       method: 'POST',
