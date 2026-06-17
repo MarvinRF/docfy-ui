@@ -5,6 +5,8 @@ import { MethodBadge } from './MethodBadge';
 
 export interface SidebarProps {
   tagGroups: TagGroup[];
+  /** Called when an endpoint link is clicked — Shell uses this to close the mobile drawer on navigation. */
+  onNavigate?: () => void;
 }
 
 function endpointId(endpoint: { method: string; path: string; operationId?: string }): string {
@@ -12,7 +14,7 @@ function endpointId(endpoint: { method: string; path: string; operationId?: stri
 }
 
 /** Tags rendered as collapsible sections, in the order the Document Model provides them. */
-export function Sidebar({ tagGroups }: SidebarProps) {
+export function Sidebar({ tagGroups, onNavigate }: SidebarProps) {
   const [collapsed, setCollapsed] = useState<Set<string>>(new Set());
   const { operationId: activeOperationId } = useParams();
 
@@ -51,6 +53,7 @@ export function Sidebar({ tagGroups }: SidebarProps) {
                     <li key={`${group.name}-${endpoint.method}-${endpoint.path}`}>
                       <Link
                         to={`/${encodeURIComponent(group.name)}/${encodeURIComponent(id)}`}
+                        onClick={onNavigate}
                         className="flex items-center gap-2 rounded px-2 py-1 text-sm transition-colors duration-100"
                         style={{
                           backgroundColor: isActive ? 'var(--color-accent)' : 'transparent',

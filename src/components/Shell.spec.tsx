@@ -86,4 +86,15 @@ describe('<Shell />', () => {
     await user.click(backdrop);
     expect(screen.queryByTestId('sidebar-backdrop')).not.toBeInTheDocument();
   });
+
+  it('closes the mobile drawer automatically after tapping an endpoint link', async () => {
+    const user = userEvent.setup();
+    renderShell('/');
+
+    await user.click(screen.getByRole('button', { name: 'Open menu' }));
+    expect(screen.getByTestId('sidebar-backdrop')).toBeInTheDocument();
+
+    await user.click(screen.getByRole('link', { name: /GET.*\/users$/ }));
+    expect(screen.queryByTestId('sidebar-backdrop')).not.toBeInTheDocument();
+  });
 });

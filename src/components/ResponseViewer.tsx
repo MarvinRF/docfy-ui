@@ -26,7 +26,7 @@ export function ResponseViewer({ response }: ResponseViewerProps) {
   if (!response) {
     return (
       <div
-        className={`flex ${CONTENT_HEIGHT} items-center justify-center rounded-lg border shadow-sm`}
+        className={`flex ${CONTENT_HEIGHT} min-w-0 items-center justify-center rounded-lg border shadow-sm`}
         style={{ borderColor: 'var(--color-border)', backgroundColor: 'var(--color-bg-elevated)' }}
       >
         <p className="text-sm opacity-60" style={{ color: 'var(--color-text)' }}>No success response declared.</p>
@@ -39,7 +39,7 @@ export function ResponseViewer({ response }: ResponseViewerProps) {
 
   return (
     <div
-      className="overflow-hidden rounded-lg border shadow-sm"
+      className="min-w-0 overflow-hidden rounded-lg border shadow-sm"
       style={{ borderColor: 'var(--color-border)', backgroundColor: 'var(--color-bg-elevated)' }}
     >
       <div role="tablist" aria-label="Response viewer" className="flex gap-1 border-b p-2" style={{ borderColor: 'var(--color-border)' }}>

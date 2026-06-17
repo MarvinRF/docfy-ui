@@ -27,9 +27,13 @@ export function EndpointDetail({ endpoint, baseUrl }: EndpointDetailProps) {
   const primarySuccess = pickPrimarySuccessResponse(endpoint.responses);
 
   return (
-    <div className="grid gap-6 lg:grid-cols-2">
-      <div>
-        <div className="mb-4 flex gap-2">
+    <div className="grid min-w-0 gap-6 lg:grid-cols-2">
+      {/* min-w-0 on each grid/flex item: without it, a long unbroken string
+          (e.g. a curl snippet with a long URL) forces its track to its
+          content's intrinsic width instead of shrinking to the viewport,
+          pushing the whole page into horizontal scroll on small screens. */}
+      <div className="min-w-0">
+        <div className="mb-4 flex flex-wrap gap-2">
           <CopyButton text={openApiJson} label="Copy OpenAPI" />
           <CopyButton text={aiText} label="Copy for AI" />
         </div>
@@ -45,7 +49,7 @@ export function EndpointDetail({ endpoint, baseUrl }: EndpointDetailProps) {
         </div>
       </div>
 
-      <div className="flex flex-col gap-4">
+      <div className="flex min-w-0 flex-col gap-4">
         <RequestPanel endpoint={endpoint} baseUrl={baseUrl} />
         <ResponseViewer response={primarySuccess} />
       </div>

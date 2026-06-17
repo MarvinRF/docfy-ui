@@ -45,7 +45,7 @@ export function Shell({ tagGroups }: ShellProps) {
         <div className="p-3">
           <SearchInput value={query} onChange={setQuery} />
         </div>
-        <Sidebar tagGroups={filtered} />
+        <Sidebar tagGroups={filtered} onNavigate={() => setSidebarOpen(false)} />
       </aside>
 
       <div className="flex min-w-0 flex-1 flex-col">

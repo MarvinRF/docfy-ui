@@ -27,7 +27,7 @@ export function RequestPanel({ endpoint, baseUrl }: RequestPanelProps) {
 
   return (
     <div
-      className="overflow-hidden rounded-lg border shadow-sm"
+      className="min-w-0 overflow-hidden rounded-lg border shadow-sm"
       style={{
         borderColor: "var(--color-border)",
         backgroundColor: "var(--color-bg-elevated)",
