@@ -1,13 +1,13 @@
-import type { Endpoint } from '../document-model/types';
-import { capDepth } from '../document-model/cap-depth';
-import { pickPrimarySuccessResponse } from '../document-model/example';
-import { operationToAiText } from '../transformers/copy-for-ai';
-import { OperationHeader } from './OperationHeader';
-import { ParametersSection } from './ParametersSection';
-import { ResponsesSection } from './ResponsesSection';
-import { RequestPanel } from './RequestPanel';
-import { ResponseViewer } from './ResponseViewer';
-import { CopyButton } from './CopyButton';
+import type { Endpoint } from "../document-model/types";
+import { capDepth } from "../document-model/cap-depth";
+import { pickPrimarySuccessResponse } from "../document-model/example";
+import { operationToAiText } from "../transformers/copy-for-ai";
+import { OperationHeader } from "./OperationHeader";
+import { ParametersSection } from "./ParametersSection";
+import { ResponsesSection } from "./ResponsesSection";
+import { RequestPanel } from "./RequestPanel";
+import { ResponseViewer } from "./ResponseViewer";
+import { CopyButton } from "./CopyButton";
 
 export interface EndpointDetailProps {
   endpoint: Endpoint;
