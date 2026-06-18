@@ -6,7 +6,25 @@ export interface ThemeTokens {
   accent: string;
   bgElevated: string;
   border: string;
+  surfaceSunken: string;
+  borderStrong: string;
+  mutedForeground: string;
 }
+
+/** Status/semantic colors — fixed across both themes, lifted from the reference design. */
+export const STATUS_TOKENS = {
+  success: "#3DA35D",
+  warning: "#E0A030",
+  destructive: "#E5484D",
+  info: "#3D8BE0",
+  methodGet: "#3D8BE0",
+  methodPost: "#3DA35D",
+  methodPut: "#E0A030",
+  methodPatch: "#E0A030",
+  methodDelete: "#E5484D",
+  terminalBg: "#1F1F1E",
+  terminalFg: "#F2F3F0",
+} as const;
 
 /** Base tokens from spec section 4.1 — do not derive these, they're fixed design decisions. */
 export const BASE_TOKENS: Record<
@@ -64,5 +82,11 @@ export function deriveSurfaceTokens(
 export function getThemeTokens(theme: ThemeName): ThemeTokens {
   const base = BASE_TOKENS[theme];
   const surface = deriveSurfaceTokens(base.bg, base.text);
-  return { ...base, ...surface };
+  return {
+    ...base,
+    ...surface,
+    surfaceSunken: mix(base.bg, base.text, 0.1),
+    borderStrong: mix(base.bg, base.text, 0.28),
+    mutedForeground: mix(base.bg, base.text, 0.55),
+  };
 }

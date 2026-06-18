@@ -10,9 +10,16 @@ export function OperationHeader({ endpoint }: OperationHeaderProps) {
 
   return (
     <div>
-      <h1 className="text-xl font-semibold" style={{ color: 'var(--color-text)' }}>{title}</h1>
+      <h1
+        className="text-[28px] font-semibold leading-tight tracking-tight text-balance"
+        style={{ color: 'var(--color-text)' }}
+      >
+        {title}
+      </h1>
       {endpoint.description && (
-        <p className="mt-1 text-sm opacity-80" style={{ color: 'var(--color-text)' }}>{endpoint.description}</p>
+        <p className="mt-2 text-[15px] leading-relaxed opacity-80" style={{ color: 'var(--color-text)' }}>
+          {endpoint.description}
+        </p>
       )}
     </div>
   );

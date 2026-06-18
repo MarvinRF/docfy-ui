@@ -5,13 +5,13 @@ export interface SchemaTreeProps {
   nodes: SchemaTreeNode[];
 }
 
-const TYPE_COLOR: Record<string, string> = {
-  string: 'text-green-400',
-  number: 'text-blue-400',
-  integer: 'text-blue-400',
-  boolean: 'text-yellow-400',
-  object: 'text-purple-400',
-  array: 'text-purple-400',
+const TYPE_COLOR_VAR: Record<string, string> = {
+  string: '--color-success',
+  number: '--color-info',
+  integer: '--color-info',
+  boolean: '--color-warning',
+  object: '--color-accent',
+  array: '--color-accent',
 };
 
 function TreeNode({ node, depth }: { node: SchemaTreeNode; depth: number }) {
@@ -38,8 +38,16 @@ function TreeNode({ node, depth }: { node: SchemaTreeNode; depth: number }) {
         ) : (
           <span className="w-4 shrink-0" />
         )}
-        <span className="font-mono text-sm">{node.name}</span>
-        <span className={`text-xs ${TYPE_COLOR[node.type] ?? 'text-gray-400'}`}>{node.type}</span>
+        <span className="font-mono text-sm font-semibold">{node.name}</span>
+        <span
+          className="rounded-md px-1.5 py-0.5 font-mono text-[10.5px]"
+          style={{
+            backgroundColor: 'var(--color-bg-elevated)',
+            color: `var(${TYPE_COLOR_VAR[node.type] ?? '--color-muted-foreground'})`,
+          }}
+        >
+          {node.type}
+        </span>
         {node.circular && (
           <span className="text-xs italic opacity-50" title="Recursive reference — already shown above">
             ↩ circular

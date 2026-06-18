@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
+import { ChevronDown } from 'lucide-react';
 import type { TagGroup } from '../document-model/types';
 import { MethodBadge } from './MethodBadge';
 
@@ -37,11 +38,15 @@ export function Sidebar({ tagGroups, onNavigate }: SidebarProps) {
               type="button"
               onClick={() => toggle(group.name)}
               aria-expanded={!isCollapsed}
-              className="flex w-full items-center justify-between rounded px-2 py-1.5 text-left text-sm font-semibold tracking-wide uppercase transition-colors duration-100 hover:bg-white/5"
-              style={{ color: 'var(--color-text)' }}
+              className="flex w-full items-center justify-between rounded-md px-2 py-1.5 text-left text-[10.5px] font-semibold uppercase tracking-[0.14em] transition-colors duration-100"
+              style={{ color: 'var(--color-muted-foreground)' }}
             >
               <span>{group.name}</span>
-              <span aria-hidden="true" className={`inline-block transition-transform duration-150 ${isCollapsed ? '-rotate-90' : 'rotate-0'}`}>▾</span>
+              <ChevronDown
+                aria-hidden="true"
+                size={13}
+                className={`transition-transform duration-150 ${isCollapsed ? '-rotate-90' : 'rotate-0'}`}
+              />
             </button>
 
             {!isCollapsed && (
@@ -50,17 +55,25 @@ export function Sidebar({ tagGroups, onNavigate }: SidebarProps) {
                   const id = endpointId(endpoint);
                   const isActive = id === activeOperationId;
                   return (
-                    <li key={`${group.name}-${endpoint.method}-${endpoint.path}`}>
+                    <li key={`${group.name}-${endpoint.method}-${endpoint.path}`} className="relative">
+                      {isActive && (
+                        <span
+                          aria-hidden="true"
+                          className="absolute left-0 top-1 bottom-1 w-0.5 rounded-r"
+                          style={{ backgroundColor: 'var(--color-accent)' }}
+                        />
+                      )}
                       <Link
                         to={`/${encodeURIComponent(group.name)}/${encodeURIComponent(id)}`}
                         onClick={onNavigate}
-                        className="flex items-center gap-2 rounded px-2 py-1 text-sm transition-colors duration-100"
+                        className="flex items-center gap-2 rounded-md px-2 py-1 text-[13px] transition-all duration-100 hover:translate-x-0.5"
                         style={{
-                          backgroundColor: isActive ? 'var(--color-accent)' : 'transparent',
-                          color: isActive ? '#FFFFFF' : 'var(--color-text)',
+                          backgroundColor: isActive ? 'color-mix(in srgb, var(--color-accent) 10%, transparent)' : 'transparent',
+                          color: isActive ? 'var(--color-accent)' : 'var(--color-text)',
+                          fontWeight: isActive ? 600 : 400,
                         }}
                         onMouseEnter={(e) => {
-                          if (!isActive) e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.06)';
+                          if (!isActive) e.currentTarget.style.backgroundColor = 'var(--color-bg-elevated)';
                         }}
                         onMouseLeave={(e) => {
                           if (!isActive) e.currentTarget.style.backgroundColor = 'transparent';

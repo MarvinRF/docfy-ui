@@ -11,7 +11,7 @@ export function ResponsesSection({ responses }: ResponsesSectionProps) {
 
   return (
     <div>
-      <h3 className="mb-2 text-sm font-semibold tracking-wide uppercase opacity-70" style={{ color: 'var(--color-text)' }}>
+      <h3 className="mb-2 text-[10.5px] font-semibold uppercase tracking-[0.14em] opacity-70" style={{ color: 'var(--color-text)' }}>
         Responses
       </h3>
       {responses.map((response) => (

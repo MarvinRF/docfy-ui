@@ -7,25 +7,35 @@ export interface ResponseCardProps {
   response: ResponseInfo;
 }
 
-function statusColorClass(status: string): string {
-  if (status.startsWith('2')) return 'bg-green-500/15 text-green-400';
-  if (status.startsWith('3')) return 'bg-yellow-500/15 text-yellow-400';
-  if (status.startsWith('4') || status.startsWith('5')) return 'bg-red-500/15 text-red-400';
-  return 'bg-gray-500/15 text-gray-400';
+function statusColorVar(status: string): string {
+  if (status.startsWith('2')) return '--color-success';
+  if (status.startsWith('3')) return '--color-warning';
+  if (status.startsWith('4') || status.startsWith('5')) return '--color-destructive';
+  return '--color-muted-foreground';
 }
 
 /** One response status: code badge, description, content-type, navigable schema. */
 export function ResponseCard({ response }: ResponseCardProps) {
   const description = response.description || STATUS_TEXT[response.status];
   const nodes = schemaToTreeNodes(response.schema);
+  const colorVar = statusColorVar(response.status);
 
   return (
     <div
-      className="mb-3 rounded-lg border p-3 shadow-sm transition-shadow duration-150 hover:shadow-md"
-      style={{ borderColor: 'var(--color-border)', backgroundColor: 'var(--color-bg-elevated)' }}
+      className="mb-3 rounded-xl border p-3.5 shadow-(--shadow-warm-sm) transition-shadow duration-150 hover:shadow-(--shadow-warm)"
+      style={{ borderColor: 'var(--color-border)', backgroundColor: 'var(--color-surface-sunken)' }}
     >
       <div className="mb-1 flex items-center gap-2">
-        <span className={`rounded px-1.5 py-0.5 text-xs font-bold ${statusColorClass(response.status)}`}>{response.status}</span>
+        <span
+          className="rounded-md px-1.5 py-0.5 font-mono text-xs font-bold ring-1 ring-inset"
+          style={{
+            color: `var(${colorVar})`,
+            backgroundColor: `color-mix(in srgb, var(${colorVar}) 15%, transparent)`,
+            boxShadow: `inset 0 0 0 1px color-mix(in srgb, var(${colorVar}) 30%, transparent)`,
+          }}
+        >
+          {response.status}
+        </span>
         {description && <span className="text-sm" style={{ color: 'var(--color-text)' }}>{description}</span>}
       </div>
       {response.contentType && (

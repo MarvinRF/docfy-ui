@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
 import { Routes, Route } from 'react-router-dom';
+import { Menu, Moon, Sun } from 'lucide-react';
 import type { TagGroup } from '../document-model/types';
 import { filterTagGroups } from '../document-model/filter';
 import { useThemeStore } from '../state/theme-store';
@@ -30,18 +31,23 @@ export function Shell({ tagGroups }: ShellProps) {
       {sidebarOpen && (
         <div
           data-testid="sidebar-backdrop"
-          className="animate-fade-in fixed inset-0 z-30 bg-black/60 lg:hidden"
+          className="animate-fade-in fixed inset-0 z-30 bg-black/60 backdrop-blur-sm lg:hidden"
           onClick={() => setSidebarOpen(false)}
           aria-hidden="true"
         />
       )}
 
       <aside
-        className={`fixed inset-y-0 left-0 z-40 flex h-full w-[280px] flex-col border-r shadow-xl transition-transform duration-200 ease-out lg:static lg:z-auto lg:translate-x-0 lg:shadow-none ${
+        className={`fixed inset-y-0 left-0 z-40 flex h-full w-[280px] flex-col border-r shadow-[var(--shadow-warm-lg)] transition-transform duration-200 ease-out lg:static lg:z-auto lg:translate-x-0 lg:shadow-none ${
           sidebarOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
         style={{ borderColor: 'var(--color-border)', backgroundColor: 'var(--color-bg-elevated)' }}
       >
+        <div className="border-b p-3" style={{ borderColor: 'var(--color-border)' }}>
+          <span className="text-[13px] font-semibold tracking-tight" style={{ color: 'var(--color-text)' }}>
+            docfy
+          </span>
+        </div>
         <div className="p-3">
           <SearchInput value={query} onChange={setQuery} />
         </div>
@@ -57,18 +63,19 @@ export function Shell({ tagGroups }: ShellProps) {
             type="button"
             onClick={() => setSidebarOpen(true)}
             aria-label="Open menu"
-            className="rounded p-1.5 transition-opacity hover:opacity-70 lg:hidden"
+            className="rounded-md p-1.5 transition-opacity hover:opacity-70 lg:hidden"
             style={{ color: 'var(--color-text)' }}
           >
-            ☰
+            <Menu size={18} />
           </button>
           <div className="flex-1" />
           <button
             type="button"
             onClick={toggleTheme}
-            className="rounded px-3 py-1 text-sm transition-opacity hover:opacity-80 active:scale-95"
+            className="flex items-center gap-1.5 rounded-md px-3 py-1 text-sm transition-opacity hover:opacity-80 active:scale-95"
             style={{ backgroundColor: 'var(--color-bg-elevated)', color: 'var(--color-text)' }}
           >
+            {theme === 'dark' ? <Sun size={14} /> : <Moon size={14} />}
             {theme === 'dark' ? 'Light mode' : 'Dark mode'}
           </button>
         </header>

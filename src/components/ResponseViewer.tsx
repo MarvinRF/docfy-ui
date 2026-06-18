@@ -26,7 +26,7 @@ export function ResponseViewer({ response }: ResponseViewerProps) {
   if (!response) {
     return (
       <div
-        className={`flex ${CONTENT_HEIGHT} min-w-0 items-center justify-center rounded-lg border shadow-sm`}
+        className={`flex ${CONTENT_HEIGHT} min-w-0 items-center justify-center rounded-2xl border shadow-(--shadow-warm)`}
         style={{ borderColor: 'var(--color-border)', backgroundColor: 'var(--color-bg-elevated)' }}
       >
         <p className="text-sm opacity-60" style={{ color: 'var(--color-text)' }}>No success response declared.</p>
@@ -39,7 +39,7 @@ export function ResponseViewer({ response }: ResponseViewerProps) {
 
   return (
     <div
-      className="min-w-0 overflow-hidden rounded-lg border shadow-sm"
+      className="min-w-0 overflow-hidden rounded-2xl border shadow-(--shadow-warm)"
       style={{ borderColor: 'var(--color-border)', backgroundColor: 'var(--color-bg-elevated)' }}
     >
       <div role="tablist" aria-label="Response viewer" className="flex gap-1 border-b p-2" style={{ borderColor: 'var(--color-border)' }}>
@@ -50,7 +50,7 @@ export function ResponseViewer({ response }: ResponseViewerProps) {
             role="tab"
             aria-selected={tab === t}
             onClick={() => setTab(t)}
-            className="rounded px-2 py-1 text-xs capitalize transition-colors duration-150"
+            className="rounded-md px-2.5 py-1 text-[11.5px] font-medium capitalize transition-colors duration-150"
             style={{
               backgroundColor: tab === t ? 'var(--color-accent)' : 'transparent',
               color: tab === t ? '#FFFFFF' : 'var(--color-text)',

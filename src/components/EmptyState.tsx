@@ -1,6 +1,6 @@
 export function EmptyState() {
   return (
-    <p style={{ color: 'var(--color-text)', opacity: 0.7 }}>
+    <p className="text-[15px]" style={{ color: 'var(--color-muted-foreground)' }}>
       Select an endpoint from the sidebar to see its details.
     </p>
   );

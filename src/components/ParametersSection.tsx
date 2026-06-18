@@ -27,16 +27,16 @@ export function ParametersSection({ parameters }: ParametersSectionProps) {
       {groups.map((group) => (
         <div key={group.kind} className="mb-4">
           <h3
-            className="mb-2 text-sm font-semibold tracking-wide uppercase opacity-70"
+            className="mb-2 text-[10.5px] font-semibold uppercase tracking-[0.14em] opacity-70"
             style={{ color: "var(--color-text)" }}
           >
             {GROUP_LABELS[group.kind]}
           </h3>
           <div
-            className="divide-y divide-(--color-border) rounded-lg border shadow-sm"
+            className="divide-y divide-(--color-border) rounded-xl border shadow-(--shadow-warm-sm)"
             style={{
               borderColor: "var(--color-border)",
-              backgroundColor: "var(--color-bg-elevated)",
+              backgroundColor: "var(--color-surface-sunken)",
             }}
           >
             {group.items.map((param) => (
