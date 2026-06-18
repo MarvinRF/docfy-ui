@@ -3,6 +3,8 @@ import type { ResponseInfo } from '../document-model/types';
 import { buildSchemaExample } from '../document-model/example';
 import { schemaToTreeNodes } from '../document-model/schema-tree';
 import { SchemaTree } from './SchemaTree';
+import { CodeBlock } from './CodeBlock';
+import { cn } from '../lib/utils';
 
 export interface ResponseViewerProps {
   response: ResponseInfo | undefined;
@@ -25,11 +27,8 @@ export function ResponseViewer({ response }: ResponseViewerProps) {
 
   if (!response) {
     return (
-      <div
-        className={`flex ${CONTENT_HEIGHT} min-w-0 items-center justify-center rounded-2xl border shadow-(--shadow-warm)`}
-        style={{ borderColor: 'var(--color-border)', backgroundColor: 'var(--color-bg-elevated)' }}
-      >
-        <p className="text-sm opacity-60" style={{ color: 'var(--color-text)' }}>No success response declared.</p>
+      <div className="flex h-80 min-w-0 items-center justify-center rounded-2xl border border-border bg-surface-elevated shadow-warm">
+        <p className="text-sm text-muted-foreground">No success response declared.</p>
       </div>
     );
   }
@@ -38,11 +37,8 @@ export function ResponseViewer({ response }: ResponseViewerProps) {
   const nodes = schemaToTreeNodes(response.schema);
 
   return (
-    <div
-      className="min-w-0 overflow-hidden rounded-2xl border shadow-(--shadow-warm)"
-      style={{ borderColor: 'var(--color-border)', backgroundColor: 'var(--color-bg-elevated)' }}
-    >
-      <div role="tablist" aria-label="Response viewer" className="flex gap-1 border-b p-2" style={{ borderColor: 'var(--color-border)' }}>
+    <div className="min-w-0 overflow-hidden rounded-2xl border border-border bg-surface-elevated shadow-warm">
+      <div role="tablist" aria-label="Response viewer" className="flex gap-1 border-b border-border p-2">
         {TABS.map((t) => (
           <button
             key={t}
@@ -50,25 +46,22 @@ export function ResponseViewer({ response }: ResponseViewerProps) {
             role="tab"
             aria-selected={tab === t}
             onClick={() => setTab(t)}
-            className="rounded-md px-2.5 py-1 text-[11.5px] font-medium capitalize transition-colors duration-150"
-            style={{
-              backgroundColor: tab === t ? 'var(--color-accent)' : 'transparent',
-              color: tab === t ? '#FFFFFF' : 'var(--color-text)',
-            }}
+            className={cn(
+              'rounded-md px-2.5 py-1 text-[11.5px] font-medium capitalize transition-colors duration-150',
+              tab === t ? 'bg-primary text-primary-foreground' : 'text-foreground hover:bg-muted',
+            )}
           >
             {t}
           </button>
         ))}
       </div>
 
-      <div key={tab} className={`themed-scroll animate-fade-in ${CONTENT_HEIGHT} overflow-y-auto p-3`}>
+      <div key={tab} className={cn('themed-scroll animate-fade-in overflow-y-auto', CONTENT_HEIGHT, tab === 'response' ? '' : 'p-3')}>
         {tab === 'response' ? (
           example ? (
-            <pre className="overflow-x-auto text-xs" style={{ color: 'var(--color-text)' }}>
-              <code>{example.json}</code>
-            </pre>
+            <CodeBlock code={example.json} language="json" variant="inline" showCopy={false} className="rounded-none ring-0" />
           ) : (
-            <p className="text-sm opacity-60" style={{ color: 'var(--color-text)' }}>No content</p>
+            <p className="p-3 text-sm text-muted-foreground">No content</p>
           )
         ) : (
           <SchemaTree nodes={nodes} />

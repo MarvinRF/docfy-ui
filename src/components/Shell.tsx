@@ -1,11 +1,9 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Routes, Route } from 'react-router-dom';
-import { Menu, Moon, Sun } from 'lucide-react';
+import { Menu } from 'lucide-react';
 import type { TagGroup } from '../document-model/types';
-import { filterTagGroups } from '../document-model/filter';
-import { useThemeStore } from '../state/theme-store';
 import { Sidebar } from './Sidebar';
-import { SearchInput } from './SearchInput';
+import { SearchModal } from './SearchModal';
 import { EndpointRoute } from './EndpointRoute';
 import { EmptyState } from './EmptyState';
 
@@ -14,73 +12,56 @@ export interface ShellProps {
 }
 
 /**
- * Main app layout: sidebar (search + tag tree) + detail panel.
- * Below the `lg` breakpoint the sidebar becomes an off-canvas drawer
- * (hamburger toggle + backdrop) instead of a fixed column.
+ * Main app layout: sidebar (brand + search trigger + theme toggle + tag
+ * tree) + detail panel. Below the `lg` breakpoint the sidebar becomes an
+ * off-canvas drawer (hamburger toggle + backdrop) instead of a fixed
+ * column. Search is a Cmd/Ctrl+K command palette (`SearchModal`), not an
+ * inline filter — matches the reference design's interaction model.
  */
 export function Shell({ tagGroups }: ShellProps) {
-  const [query, setQuery] = useState('');
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const filtered = useMemo(() => filterTagGroups(tagGroups, query), [tagGroups, query]);
+  const [searchOpen, setSearchOpen] = useState(false);
 
-  const theme = useThemeStore((s) => s.theme);
-  const toggleTheme = useThemeStore((s) => s.toggleTheme);
+  useEffect(() => {
+    function onKey(e: KeyboardEvent) {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        setSearchOpen(true);
+      }
+    }
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, []);
 
   return (
-    <div className="relative flex h-full overflow-hidden">
-      {sidebarOpen && (
-        <div
-          data-testid="sidebar-backdrop"
-          className="animate-fade-in fixed inset-0 z-30 bg-black/60 backdrop-blur-sm lg:hidden"
-          onClick={() => setSidebarOpen(false)}
-          aria-hidden="true"
-        />
-      )}
-
-      <aside
-        className={`fixed inset-y-0 left-0 z-40 flex h-full w-[280px] flex-col border-r shadow-[var(--shadow-warm-lg)] transition-transform duration-200 ease-out lg:static lg:z-auto lg:translate-x-0 lg:shadow-none ${
-          sidebarOpen ? 'translate-x-0' : '-translate-x-full'
-        }`}
-        style={{ borderColor: 'var(--color-border)', backgroundColor: 'var(--color-bg-elevated)' }}
-      >
-        <div className="border-b p-3" style={{ borderColor: 'var(--color-border)' }}>
-          <span className="text-[13px] font-semibold tracking-tight" style={{ color: 'var(--color-text)' }}>
-            docfy
-          </span>
-        </div>
-        <div className="p-3">
-          <SearchInput value={query} onChange={setQuery} />
-        </div>
-        <Sidebar tagGroups={filtered} onNavigate={() => setSidebarOpen(false)} />
-      </aside>
+    <div className="relative flex h-full overflow-hidden bg-background text-foreground">
+      <Sidebar
+        tagGroups={tagGroups}
+        mobileOpen={sidebarOpen}
+        onCloseMobile={() => setSidebarOpen(false)}
+        onSearchOpen={() => setSearchOpen(true)}
+      />
+      <SearchModal open={searchOpen} onOpenChange={setSearchOpen} tagGroups={tagGroups} />
 
       <div className="flex min-w-0 flex-1 flex-col">
-        <header
-          className="flex items-center justify-between gap-2 border-b p-3"
-          style={{ borderColor: 'var(--color-border)', backgroundColor: 'var(--color-bg)' }}
-        >
+        <div className="sticky top-0 z-20 flex items-center justify-between border-b border-border bg-surface/80 px-4 py-2 backdrop-blur lg:hidden">
           <button
             type="button"
             onClick={() => setSidebarOpen(true)}
             aria-label="Open menu"
-            className="rounded-md p-1.5 transition-opacity hover:opacity-70 lg:hidden"
-            style={{ color: 'var(--color-text)' }}
+            className="rounded-md p-1.5 text-foreground transition-colors hover:bg-muted"
           >
             <Menu size={18} />
           </button>
-          <div className="flex-1" />
-          <button
-            type="button"
-            onClick={toggleTheme}
-            className="flex items-center gap-1.5 rounded-md px-3 py-1 text-sm transition-opacity hover:opacity-80 active:scale-95"
-            style={{ backgroundColor: 'var(--color-bg-elevated)', color: 'var(--color-text)' }}
-          >
-            {theme === 'dark' ? <Sun size={14} /> : <Moon size={14} />}
-            {theme === 'dark' ? 'Light mode' : 'Dark mode'}
-          </button>
-        </header>
+          <span className="font-mono text-[11.5px] text-muted-foreground">docfy</span>
+          <span className="w-7" />
+        </div>
 
-        <main className="themed-scroll flex-1 overflow-y-auto p-4 sm:p-6">
+        <main className="themed-scroll relative flex-1 overflow-y-auto p-4 sm:p-6">
+          <div
+            aria-hidden="true"
+            className="dot-grid pointer-events-none absolute inset-x-0 top-0 -z-10 h-72 opacity-50 mask-[linear-gradient(to_bottom,black,transparent)]"
+          />
           <Routes>
             <Route path="/:tag/:operationId" element={<EndpointRoute tagGroups={tagGroups} />} />
             <Route path="*" element={<EmptyState />} />

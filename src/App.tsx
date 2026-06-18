@@ -30,8 +30,8 @@ export function App() {
 
 function CenteredMessage({ children }: { children: React.ReactNode }) {
   return (
-    <div className="flex h-full items-center justify-center" style={{ color: 'var(--color-text)' }}>
-      {children}
+    <div className="flex h-full items-center justify-center bg-background px-4 text-foreground">
+      <p className="max-w-md text-center text-sm text-muted-foreground">{children}</p>
     </div>
   );
 }

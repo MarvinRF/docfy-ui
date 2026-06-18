@@ -28,7 +28,7 @@ describe('<App />', () => {
       vi.fn(() => Promise.resolve({ ok: true, status: 200, statusText: 'OK', json: () => Promise.resolve(SAMPLE_SPEC) })),
     );
     render(<App />);
-    await waitFor(() => expect(screen.getByText('/users')).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText('List users')).toBeInTheDocument());
   });
 
   it('shows an error message when the spec fails to load', async () => {

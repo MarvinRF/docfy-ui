@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { describe, it, expect } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { EndpointDetail } from './EndpointDetail';
 import type { Endpoint } from '../document-model/types';
@@ -37,8 +37,9 @@ describe('<EndpointDetail />', () => {
 
   it('renders the request panel with the right method/path', () => {
     render(<EndpointDetail endpoint={makeEndpoint()} baseUrl="https://api.example.com" />);
-    expect(screen.getByText('POST')).toBeInTheDocument();
-    expect(screen.getByText('/auth/register')).toBeInTheDocument();
+    const header = screen.getByTestId('request-panel-header');
+    expect(within(header).getByText('POST')).toBeInTheDocument();
+    expect(within(header).getByText('/auth/register')).toBeInTheDocument();
   });
 
   it('renders the responses section with both declared statuses', () => {

@@ -10,11 +10,7 @@ export const Separator = React.forwardRef<
     ref={ref}
     decorative={decorative}
     orientation={orientation}
-    className={cn(
-      'bg-[var(--color-border)]',
-      orientation === 'horizontal' ? 'h-px w-full' : 'h-full w-px',
-      className,
-    )}
+    className={cn('bg-border', orientation === 'horizontal' ? 'h-px w-full' : 'h-full w-px', className)}
     {...props}
   />
 ));

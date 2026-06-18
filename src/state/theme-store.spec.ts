@@ -18,10 +18,14 @@ describe('useThemeStore', () => {
     expect(localStorage.getItem('docfy-ui:theme')).toBe('light');
   });
 
-  it('setTheme applies the CSS variables to <html>', () => {
+  it('setTheme toggles the dark class on <html>', () => {
     useThemeStore.getState().setTheme('light');
     expect(document.documentElement.dataset.theme).toBe('light');
-    expect(document.documentElement.style.getPropertyValue('--color-bg')).toBe('#FFFAF3');
+    expect(document.documentElement.classList.contains('dark')).toBe(false);
+
+    useThemeStore.getState().setTheme('dark');
+    expect(document.documentElement.dataset.theme).toBe('dark');
+    expect(document.documentElement.classList.contains('dark')).toBe(true);
   });
 
   it('toggleTheme flips between dark and light', () => {

@@ -13,7 +13,7 @@ export function EndpointRoute({ tagGroups }: EndpointRouteProps) {
   const endpoint = group?.endpoints.find((e) => (e.operationId ?? `${e.method}-${e.path}`) === operationId);
 
   if (!endpoint) {
-    return <p style={{ color: 'var(--color-text)' }}>Endpoint not found.</p>;
+    return <p className="text-foreground">Endpoint not found.</p>;
   }
 
   const baseUrl = typeof window !== 'undefined' ? window.location.origin : '';

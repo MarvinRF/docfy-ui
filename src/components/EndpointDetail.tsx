@@ -27,7 +27,7 @@ export function EndpointDetail({ endpoint, baseUrl }: EndpointDetailProps) {
   const primarySuccess = pickPrimarySuccessResponse(endpoint.responses);
 
   return (
-    <div className="grid min-w-0 gap-6 lg:grid-cols-2">
+    <article className="animate-fade-in-up grid min-w-0 gap-6 lg:grid-cols-2">
       {/* min-w-0 on each grid/flex item: without it, a long unbroken string
           (e.g. a curl snippet with a long URL) forces its track to its
           content's intrinsic width instead of shrinking to the viewport,
@@ -40,11 +40,11 @@ export function EndpointDetail({ endpoint, baseUrl }: EndpointDetailProps) {
 
         <OperationHeader endpoint={endpoint} />
 
-        <div className="mt-4">
+        <div className="mt-8">
           <ParametersSection parameters={endpoint.parameters} />
         </div>
 
-        <div className="mt-4">
+        <div className="mt-8">
           <ResponsesSection responses={endpoint.responses} />
         </div>
       </div>
@@ -53,6 +53,6 @@ export function EndpointDetail({ endpoint, baseUrl }: EndpointDetailProps) {
         <RequestPanel endpoint={endpoint} baseUrl={baseUrl} />
         <ResponseViewer response={primarySuccess} />
       </div>
-    </div>
+    </article>
   );
 }

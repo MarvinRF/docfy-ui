@@ -11,12 +11,12 @@ describe('<ResponseViewer />', () => {
   });
 
   it('shows the example JSON on the Response tab by default', () => {
-    render(
+    const { container } = render(
       <ResponseViewer
         response={{ status: '200', description: 'OK', contentType: 'application/json', schema: { type: 'object', properties: { id: { type: 'string' } } } }}
       />,
     );
-    expect(screen.getByText(/"id": "string"/)).toBeInTheDocument();
+    expect(container.querySelector('code')?.textContent).toMatch(/"id": "string"/);
   });
 
   it('switches to the schema tree on the Schema tab', async () => {

@@ -1,6 +1,5 @@
 import { create } from 'zustand';
-import { applyTheme } from '../styles/apply-theme';
-import type { ThemeName } from '../styles/tokens';
+import { applyTheme, type ThemeName } from '../styles/apply-theme';
 
 const STORAGE_KEY = 'docfy-ui:theme';
 

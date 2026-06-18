@@ -1,4 +1,5 @@
 import type { ParameterInfo } from '../document-model/types';
+import { cn } from '../lib/utils';
 
 export interface ParameterRowProps {
   parameter: ParameterInfo;
@@ -10,34 +11,28 @@ export function ParameterRow({ parameter }: ParameterRowProps) {
   const example = parameter.schema?.example;
 
   return (
-    <div className="px-3 py-2.5 transition-colors duration-100" style={{ backgroundColor: 'transparent' }}>
-      <div className="flex items-center gap-2">
-        <span className="font-mono text-[13px] font-semibold" style={{ color: 'var(--color-text)' }}>{parameter.name}</span>
-        <span
-          className="rounded-md px-1.5 py-0.5 font-mono text-[10.5px]"
-          style={{ backgroundColor: 'var(--color-bg-elevated)', color: 'var(--color-muted-foreground)' }}
-        >
+    <div className="px-4 py-3 transition-colors duration-100 hover:bg-muted/40">
+      <div className="flex flex-wrap items-center gap-2">
+        <span className="font-mono text-[13px] font-semibold text-foreground">{parameter.name}</span>
+        <span className="rounded-md bg-secondary px-1.5 py-0.5 font-mono text-[10.5px] text-secondary-foreground">
           {type}
         </span>
-        {parameter.required && (
-          <span
-            className="rounded-md px-1.5 py-0.5 text-[10.5px] font-medium"
-            style={{
-              backgroundColor: 'color-mix(in srgb, var(--color-accent) 12%, transparent)',
-              color: 'var(--color-accent)',
-            }}
-          >
-            required
-          </span>
-        )}
+        <span
+          className={cn(
+            'rounded-md px-1.5 py-0.5 font-mono text-[10.5px] ring-1 ring-inset',
+            parameter.required
+              ? 'bg-primary/12 text-primary ring-primary/25'
+              : 'bg-muted text-muted-foreground ring-border',
+          )}
+        >
+          {parameter.required ? 'required' : 'optional'}
+        </span>
       </div>
       {parameter.description && (
-        <p className="mt-0.5 text-sm opacity-80" style={{ color: 'var(--color-text)' }}>{parameter.description}</p>
+        <p className="mt-1.5 text-[13.5px] leading-relaxed text-muted-foreground">{parameter.description}</p>
       )}
       {example !== undefined && (
-        <p className="mt-0.5 font-mono text-xs opacity-60" style={{ color: 'var(--color-text)' }}>
-          Example: {JSON.stringify(example)}
-        </p>
+        <p className="mt-1 font-mono text-xs text-muted-foreground">Example: {JSON.stringify(example)}</p>
       )}
     </div>
   );

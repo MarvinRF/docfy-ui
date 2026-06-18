@@ -11,11 +11,11 @@ describe('<MethodBadge />', () => {
 
   it('applies a distinct color token per method', () => {
     render(<MethodBadge method="POST" />);
-    expect(screen.getByText('POST').style.color).toBe('var(--color-method-post)');
+    expect(screen.getByText('POST').className).toContain('text-method-post');
   });
 
   it('falls back to a default color token for an unrecognized method', () => {
     render(<MethodBadge method="TRACE" />);
-    expect(screen.getByText('TRACE').style.color).toBe('var(--color-muted-foreground)');
+    expect(screen.getByText('TRACE').className).toContain('text-muted-foreground');
   });
 });

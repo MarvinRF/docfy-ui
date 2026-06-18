@@ -26,11 +26,7 @@ export function CommandDialog({ children, ...props }: CommandDialogProps) {
       <DialogPrimitive.Portal>
         <DialogPrimitive.Overlay className="fixed inset-0 z-[100] bg-black/50 backdrop-blur-sm animate-fade-in" />
         <DialogPrimitive.Content
-          className="fixed left-1/2 top-[12vh] z-[100] w-full max-w-xl -translate-x-1/2 overflow-hidden rounded-2xl border shadow-[var(--shadow-warm-lg)] animate-slide-in"
-          style={{
-            backgroundColor: 'var(--color-bg-elevated)',
-            borderColor: 'var(--color-border)',
-          }}
+          className="animate-slide-in fixed left-1/2 top-[12vh] z-[100] w-full max-w-xl -translate-x-1/2 overflow-hidden rounded-2xl border border-border bg-surface-elevated shadow-warm-lg"
           aria-describedby={undefined}
         >
           <DialogPrimitive.Title className="sr-only">Search endpoints</DialogPrimitive.Title>
@@ -45,18 +41,14 @@ export const CommandInput = React.forwardRef<
   React.ElementRef<typeof CommandPrimitive.Input>,
   React.ComponentPropsWithoutRef<typeof CommandPrimitive.Input>
 >(({ className, ...props }, ref) => (
-  <div
-    className="flex items-center gap-2 border-b px-4 py-3"
-    style={{ borderColor: 'var(--color-border)' }}
-  >
-    <Search size={16} style={{ color: 'var(--color-muted-foreground)' }} />
+  <div className="flex items-center gap-2 border-b border-border px-4 py-3">
+    <Search size={16} className="text-muted-foreground" />
     <CommandPrimitive.Input
       ref={ref}
       className={cn(
-        'flex-1 bg-transparent text-[14px] outline-none placeholder:opacity-60',
+        'flex-1 bg-transparent text-[14px] text-foreground outline-none placeholder:text-muted-foreground',
         className,
       )}
-      style={{ color: 'var(--color-text)' }}
       {...props}
     />
   </div>
@@ -81,8 +73,7 @@ export const CommandEmpty = React.forwardRef<
 >((props, ref) => (
   <CommandPrimitive.Empty
     ref={ref}
-    className="py-6 text-center text-sm opacity-60"
-    style={{ color: 'var(--color-text)' }}
+    className="py-6 text-center text-sm text-muted-foreground"
     {...props}
   />
 ));
@@ -107,7 +98,7 @@ export const CommandItem = React.forwardRef<
   <CommandPrimitive.Item
     ref={ref}
     className={cn(
-      'flex cursor-pointer items-center justify-between gap-2 rounded-md px-2 py-2 text-sm data-[selected=true]:bg-[var(--color-accent)]/12',
+      'flex cursor-pointer items-center justify-between gap-2 rounded-md px-2 py-2 text-sm data-[selected=true]:bg-accent/12',
       className,
     )}
     {...props}

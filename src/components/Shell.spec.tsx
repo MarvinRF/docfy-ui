@@ -52,17 +52,21 @@ describe('<Shell />', () => {
     expect(screen.getByRole('button', { name: 'Copy for AI' })).toBeInTheDocument();
   });
 
-  it('search filters the sidebar to matching endpoints only', async () => {
+  it('opens the search modal via the sidebar search trigger', async () => {
     const user = userEvent.setup();
     renderShell('/');
 
-    expect(screen.getByText('/users')).toBeInTheDocument();
-    expect(screen.getByText('/orders')).toBeInTheDocument();
+    expect(screen.queryByPlaceholderText(/search endpoints/i)).not.toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: /search/i }));
+    expect(screen.getByPlaceholderText(/search endpoints/i)).toBeInTheDocument();
+  });
 
-    await user.type(screen.getByRole('searchbox'), 'orders');
+  it('opens the search modal via Cmd/Ctrl+K', async () => {
+    const user = userEvent.setup();
+    renderShell('/');
 
-    expect(screen.queryByText('/users')).not.toBeInTheDocument();
-    expect(screen.getByText('/orders')).toBeInTheDocument();
+    await user.keyboard('{Control>}k{/Control}');
+    expect(screen.getByPlaceholderText(/search endpoints/i)).toBeInTheDocument();
   });
 
   it('toggles the theme without unmounting the page', async () => {
@@ -94,7 +98,7 @@ describe('<Shell />', () => {
     await user.click(screen.getByRole('button', { name: 'Open menu' }));
     expect(screen.getByTestId('sidebar-backdrop')).toBeInTheDocument();
 
-    await user.click(screen.getByRole('link', { name: /GET.*\/users$/ }));
+    await user.click(screen.getByRole('link', { name: /List all users/i }));
     expect(screen.queryByTestId('sidebar-backdrop')).not.toBeInTheDocument();
   });
 });
