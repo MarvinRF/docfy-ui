@@ -1,116 +1,188 @@
-# docfy-ui
+<h1 align="center">
+  docfy-ui
+</h1>
 
-AI-first OpenAPI documentation UI — companion project to [nestjs-docfy](https://github.com/MarvinRF/nest-docfy).
+[![NPM version](https://img.shields.io/npm/v/docfy-ui.svg)](https://www.npmjs.com/package/docfy-ui)
+[![NPM downloads](https://img.shields.io/npm/dw/docfy-ui.svg)](https://www.npmjs.com/package/docfy-ui)
+[![GitHub last commit](https://img.shields.io/github/last-commit/MarvinRF/docfy-ui)](https://github.com/MarvinRF/docfy-ui/commits/main)
+[![GitHub issues](https://img.shields.io/github/issues/MarvinRF/docfy-ui.svg)](https://github.com/MarvinRF/docfy-ui/issues)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/MarvinRF/docfy-ui/blob/main/LICENSE)
 
-A lean, modern API reference UI with a "Copy for AI" button on every endpoint: a one-click, pre-formatted text representation optimized for pasting into an LLM prompt — instead of dumping raw OpenAPI JSON or full HTML.
+AI-first OpenAPI documentation UI — companion project to [nestjs-docfy](https://www.npmjs.com/package/nestjs-docfy). A lean, modern API reference UI with a **"Copy for AI"** button on every endpoint: a one-click, pre-formatted text representation optimized for pasting into an LLM prompt — instead of dumping raw OpenAPI JSON or full HTML.
 
-Status: early development. See `docs/implementation-plan.md` (TODO) for the phased build plan.
+## Table of contents
 
-## Phase 1 — Document Model
+- [Motivation](#motivation)
+- [Features](#features)
+- [Installation](#installation)
+- [Quick start](#quick-start)
+  - [Serving from the same NestJS app as the API](#serving-from-the-same-nestjs-app-as-the-api)
+  - [Pointing at a remote spec](#pointing-at-a-remote-spec)
+- [Configuration](#configuration)
+- [Copy for AI](#copy-for-ai)
+- [Document Model](#document-model)
+- [Theming](#theming)
+- [Architecture notes](#architecture-notes)
+- [Scripts](#scripts)
+- [Testing](#testing)
+- [License](#license)
 
-Parses and normalizes an OpenAPI 3.0/3.1 spec into an in-memory model (`tagGroups → endpoints`) consumed by the UI. No React yet — this layer is pure TypeScript, tested in isolation.
+## Motivation
 
-- `src/document-model/normalize.ts` — `normalizeDocument(spec)`, dereferences `$ref`s via `@apidevtools/swagger-parser` and groups endpoints by tag, preserving declared order.
-- `src/document-model/cap-depth.ts` — `capDepth(value)`, makes a dereferenced (and possibly cyclic, for recursive DTOs) schema safe to `JSON.stringify`.
-- `src/__tests__/parser-spike.spec.ts` — records the decision to use `@apidevtools/swagger-parser` over `@readme/openapi-parser` (smaller bundle, `browser` field, equivalent 3.1 support) as a regression-protecting test.
+Most OpenAPI UIs are built for humans skimming a page — they're the wrong shape for the other audience that reads documentation today: an LLM you're pasting context into. Copying an endpoint's details usually means grabbing raw JSON (verbose, full of `$ref`s and noise) or copy-pasting rendered HTML (loses structure entirely).
 
-## Phase 2 — "Copy for AI" transformer
+**Before** — feeding an LLM a copy of the raw OpenAPI fragment:
 
-Pure function `operationToAiText(endpoint)` — turns a normalized `Endpoint` into the plain-text representation behind the "Copy for AI" button. No I/O, no React dependency; runs in well under 5ms.
-
-- `src/transformers/copy-for-ai.ts`
-- Reproduces the worked example from the spec exactly, with two documented deviations from ambiguities in the source spec:
-  1. **Type over format in examples** — the spec's own algorithm says "chave: tipo" (key: type), but its worked example shows `"id": "uuid"` (using `format`) for one field and `"email": "string"` (using `type`, ignoring its `format: email`) for another — an internal inconsistency. We always use `type`, consistently; format-specific detail (uuid, email, etc.) surfaces in the Validation section instead.
-  2. **`required` does not produce its own Validation line** — the worked example shows zero "X is required" lines for a register endpoint where required fields are near-certain, so presence is conveyed by the field appearing in the Request example, not a separate line.
-- Section join uses a single newline between sections (matching the literal worked example), not the blank line the spec's prose mentions — the two contradict each other; we matched the testable example.
-
-## Phase 3 — UI shell
-
-React 19 + Vite 8 + Tailwind 4 + React Router 7 + Zustand. No endpoint detail rendering or Copy buttons yet — that's Phase 4.
-
-- `src/styles/tokens.ts` — `getThemeTokens(theme)` / `deriveSurfaceTokens(bg, text)`, pure functions implementing spec section 4.1 (the 3 base tokens, plus derived `bgElevated`/`border` by mixing `bg` toward `text`, never introducing a new hue).
-- `src/styles/apply-theme.ts` — sets the CSS custom properties + `data-theme` on `<html>`; no reload needed to switch themes.
-- `src/state/theme-store.ts` — Zustand store, persists the chosen theme to `localStorage`.
-- `src/document-model/filter.ts` — `filterTagGroups(groups, query)`, the client-side search (substring match on path/summary/operationId, no debounce).
-- `src/hooks/use-openapi-spec.ts` — fetches the spec from a URL (default `/api-json`, override via `?spec=<url>`) and runs it through `normalizeDocument`.
-- `src/components/` — `Sidebar` (collapsible tag sections, method-color badges), `SearchInput`, `MethodBadge`, `Shell` (layout + theme toggle + routing).
-
-**Real-browser bug found and fixed**: `@apidevtools/json-schema-ref-parser` (a transitive dependency of swagger-parser) calls `Buffer.isBuffer(value)` unconditionally — no `typeof Buffer !== 'undefined'` guard — which throws `Buffer is not defined` in any real browser (it only worked in our Node-based tests). Its `browser` package.json field only stubs `fs`, not `Buffer`. Confirmed `@readme/openapi-parser` (the alternative considered in the Phase 1 spike) depends on the exact same package/version, so switching libraries would not have avoided this. Fixed with a minimal polyfill (`src/polyfills.ts`, the `buffer` npm package) imported first in `main.tsx`. Verified by reproducing the exact failure in Node with `Buffer` deleted from `globalThis`, then confirming the polyfill resolves it — see the comment in `src/polyfills.ts`.
-
-The `path`/`util` externalization warnings Vite/Rolldown still log during build are unrelated and benign — confirmed the production bundle contains no literal bare-specifier imports of those modules (the code paths that would need them are never reached for in-memory spec dereferencing).
-
-## Phase 4 — Endpoint detail (Scalar-inspired 2-column layout)
-
-Replaces the Phase 3 placeholder. Two columns: documentation on the left, a playground-style panel on the right. **Real request execution is explicitly out of scope for this iteration** — the "Test Request" button is rendered disabled. This was a deliberate scope decision (the original MVP spec excluded a live API test client; the user asked for the layout without changing that exclusion).
-
-- `src/document-model/example.ts` — `buildSchemaExample(schema)`, extracted from `copy-for-ai.ts` so the same type-token example (no fake data) is shared between Copy for AI and the code snippets below. Also home to `STATUS_TEXT` and `pickPrimarySuccessResponse()`.
-- `src/document-model/schema-tree.ts` — `schemaToTreeNodes(schema)`, a separate pure transform from `buildSchemaExample()`: walks schema *metadata* (name/type/required/nullable) for the navigable tree view, not example values.
-- `src/transformers/code-snippets.ts` — `buildCodeSnippet(endpoint, baseUrl, lang)` for curl/JavaScript(fetch)/Axios/Python/PHP. Query params render as `name=type` placeholders, same no-fake-data principle as Copy for AI.
-- `src/hooks/use-copy-to-clipboard.ts` — Clipboard API with an `execCommand('copy')` fallback for non-secure contexts, per spec section 3.5. `copied` flips back after ~1.5s.
-- `src/components/SchemaTree.tsx` — expandable/collapsible tree (top level open by default, deeper nesting collapsed).
-- `src/components/ParametersSection.tsx` / `ResponsesSection.tsx` — grouped by Path/Query/Headers and by status code, respectively.
-- `src/components/RequestPanel.tsx` — method+path header, language-switchable snippet, copy button, disabled "Test Request".
-- `src/components/ResponseViewer.tsx` — Response/Schema tabs for the primary success response. No "Headers" tab — OpenAPI response headers aren't extracted by the Document Model yet; that's a follow-up, not a silent omission.
-- `src/components/EndpointDetail.tsx` — assembles the above; also where "Copy OpenAPI" (`JSON.stringify(capDepth(endpoint))`) and "Copy for AI" live.
-
-**Bug found and fixed during integration testing**: `extractValidationRules()` in `copy-for-ai.ts` recursed into nested object schemas with no depth cap, unlike `flattenSchema()`/`schemaToTreeNodes()` which both already had one. A genuinely recursive DTO (the same case `capDepth()` exists to handle) crashed "Copy for AI" with a stack overflow. Originally fixed with a numeric depth cap; later replaced (see Phase 4.5 below) with identity-based ancestor tracking, the same pattern the other two functions already used correctly — a numeric cap just unrolls a cycle N times instead of recognizing the repeat.
-
-**Test-writing gotcha worth remembering**: `userEvent.setup()` installs its own clipboard stub on `navigator.clipboard`. Mocking `navigator.clipboard` *before* calling `userEvent.setup()` gets silently clobbered — it must be mocked *after*.
-
-## Phase 4.5 — Visual polish, circular-schema fix, mobile responsiveness
-
-- **Visual depth pass**: shadows, a darker dark-mode palette, fixed-height scrollable panels (`RequestPanel`/`ResponseViewer`, `themed-scroll`), and Tailwind-driven enter animations (`animate-fade-in`, `animate-collapse-in`) for tab/panel transitions.
-- **Circular-schema fix**: all three schema-walking functions (`flattenSchema` in `example.ts`, `schemaToTreeNodes` in `schema-tree.ts`, `extractValidationRules` in `copy-for-ai.ts`) now track an `ancestors: Set<JSONSchemaLike>` by object identity (add before recursing into a branch, delete after) instead of a numeric depth cap. A numeric cap unrolls a recursive DTO N times before giving up, producing duplicated lines/nodes and mislabeled leaves; identity tracking recognizes the exact repeat and renders a single `(circular reference)` marker. `SchemaTree.tsx` renders a `↩ circular` label for these nodes.
-- **Mobile responsiveness**: found via an actual Playwright + real-Chrome screenshot audit at 375/390/768px, not by guesswork — (1) the off-canvas sidebar drawer didn't close after tapping an endpoint link (fixed with a `Sidebar` `onNavigate` callback wired from `Shell`); (2) horizontal page overflow below ~620px caused by CSS Grid/Flex items' default `min-width: auto` letting a long unbroken curl snippet string force its track wider than the viewport (fixed with `min-w-0` down the `EndpointDetail` → `RequestPanel`/`ResponseViewer` chain).
-
-## Phase 5 — Polish and acceptance audit
-
-End-to-end audit of the spec's section 5 acceptance checklist against real OpenAPI 3.0 **and** 3.1 documents (`public/sample-spec.json` and `public/sample-spec-31.json`, the latter added specifically for this audit to exercise `oneOf`/`anyOf`, a no-`requestBody` endpoint, an endpoint with no declared error responses, an unconstrained schema, and a long multi-sentence description), driven by Playwright + real Chrome. All 7 acceptance criteria verified, both specs, no regressions:
-
-1. Sidebar shows all tags with their routes, grouped and in spec-declared order.
-2. Search filters in real time, no Enter key needed.
-3. Dark/light toggle applies tokens with no page reload.
-4. "Copy OpenAPI" copies valid JSON for the selected endpoint.
-5. "Copy for AI" copies text matching the section 3.3 structure, with every section 3.4 edge case applied correctly: no `requestBody` → no Request section; no declared 4xx/5xx → no Error Responses section; `oneOf`/`anyOf` → `(one of N possible shapes)` annotation; schema with no constraints → no Validation section; long description with no `summary` → truncated to 2 sentences for Purpose.
-6. "Copy for AI" generation is consistently well under 100ms (measured ~30–45ms), no spinner ever renders.
-7. UI functions identically for 3.0 and 3.1 specs.
-
-## Setup — serving the spec
-
-The UI fetches an OpenAPI document client-side and has no other dependency on a backend. Two ways to point it at one:
-
-1. **Default convention** — same-origin `GET /api-json`, matching what `@nestjs/swagger`'s `SwaggerModule.setup()` exposes alongside the HTML Swagger UI by default.
-2. **Explicit override** — `?spec=<url>` query param, e.g. `https://docs.example.com/?spec=https://api.example.com/api-json`. Takes precedence over the default when present.
-
-### Serving docfy-ui from the same NestJS app as the API
-
-Build the UI (`npm run build`, output in `dist/`) and serve it as static assets from the same Nest app that exposes `/api-json`, so both are same-origin and CORS never enters the picture:
-
-```ts
-import { ServeStaticModule } from '@nestjs/serve-static';
-import { join } from 'path';
-
-@Module({
-  imports: [
-    ServeStaticModule.forRoot({
-      rootPath: join(__dirname, '..', 'docfy-ui-dist'),
-      serveRoot: '/docs',
-    }),
-  ],
-})
-export class AppModule {}
+```json
+{
+  "post": {
+    "operationId": "createUser",
+    "requestBody": { "content": { "application/json": { "schema": { "$ref": "#/components/schemas/CreateUserDto" } } } },
+    "responses": { "201": { "$ref": "#/components/responses/UserCreated" }, "400": { "description": "Bad Request" } }
+  }
+}
 ```
 
-With `SwaggerModule.setup('api', app, document)` (JSON at `/api-json` by default) and the UI mounted at `/docs`, visiting `/docs` resolves the spec automatically — no `?spec=` needed, since both are served by the same origin.
+**After** — one click of "Copy for AI" on the same endpoint:
 
-If the UI is deployed on a different origin than the API, use the `?spec=` override and make sure the API's CORS config allows that origin to `GET` the JSON document.
+```text
+## Create a user
+POST /users
+
+### Request
+{
+  "name": "string",
+  "email": "string"
+}
+
+### Responses
+201 Created — UserEntity
+400 Bad Request
+
+### Validation
+- name: required, minLength 2
+- email: required, format email
+```
+
+`docfy-ui` renders that text deterministically from the same OpenAPI document any Swagger UI already serves — no extra annotations, no backend changes.
+
+## Features
+
+- **Copy for AI** — every endpoint gets a one-click, LLM-ready plain-text summary (purpose, request, responses, validation rules) instead of raw JSON.
+- **Copy OpenAPI** — copies the dereferenced, cycle-safe JSON fragment for just the selected endpoint.
+- **Two-column endpoint view** — documentation on the left (parameters, responses, navigable schema tree), code snippets (curl, JavaScript, Python, Go) on the right.
+- **Real-time search** — filters the sidebar by path/summary/operationId on every keystroke, no debounce, no Enter key.
+- **Dark/light theme** — token-driven, switches instantly with no page reload and no flash on first paint.
+- **Zero backend coupling** — fetches a plain OpenAPI 3.0/3.1 JSON document client-side; works with any server that exposes one, not just NestJS.
+- **Mobile-responsive** — off-canvas sidebar drawer below the `lg` breakpoint, audited at 375/390/768px.
+
+## Installation
+
+```bash
+npm install docfy-ui
+```
+
+This package ships a pre-built static bundle (`dist/`) — there is no server-side code to install on a Node backend. If you're using [`nestjs-docfy`](https://www.npmjs.com/package/nestjs-docfy), its `DocfyUiModule.setup()` already wraps this for you (see below); otherwise, serve the `dist/` folder with any static file server.
+
+## Quick start
+
+### Serving from the same NestJS app as the API
+
+The simplest setup if your backend is NestJS: let `nestjs-docfy` mount this package for you.
+
+```ts
+import { NestFactory } from "@nestjs/core";
+import { SwaggerModule, DocumentBuilder } from "@nestjs/swagger";
+import { DocfyUiModule } from "nestjs-docfy";
+
+const app = await NestFactory.create(AppModule);
+
+DocfyUiModule.setup("/docs", app); // before SwaggerModule.setup
+
+const document = SwaggerModule.createDocument(app, new DocumentBuilder().build());
+SwaggerModule.setup("api", app, document); // exposes /api-json, which docfy-ui fetches by default
+
+await app.listen(3000);
+```
+
+Visit `/docs` — no further configuration needed, since `docfy-ui` fetches `/api-json` same-origin by default.
+
+### Pointing at a remote spec
+
+Without `nestjs-docfy`, build and serve the static assets yourself and point them at any OpenAPI document — same-origin convention or an explicit URL:
+
+```bash
+npm run build   # in this package, or use the prebuilt dist/ from npm
+```
+
+Serve `dist/` with any static host (NestJS's `ServeStaticModule`, Nginx, S3 + CloudFront, etc.) alongside or in front of the API that exposes the spec.
+
+## Configuration
+
+The UI has no build-time configuration — it resolves the spec to render entirely at runtime, via one rule with one override:
+
+| Source | When | Example |
+| --- | --- | --- |
+| `GET /api-json` (same-origin) | Default — matches what `@nestjs/swagger`'s `SwaggerModule.setup()` exposes alongside Swagger UI | `https://api.example.com/docs` → fetches `https://api.example.com/api-json` |
+| `?spec=<url>` query param | Takes precedence over the default when present | `https://docs.example.com/?spec=https://api.example.com/api-json` |
+
+If the UI is deployed on a different origin than the API, use the `?spec=` override and make sure the API's CORS configuration allows that origin to `GET` the JSON document.
+
+## Copy for AI
+
+`operationToAiText(endpoint)` (`src/transformers/copy-for-ai.ts`) is a pure function — no I/O, no React — that turns a normalized endpoint into the plain-text block behind the "Copy for AI" button, structured as: Purpose → Request → Responses → Error Responses → Validation. Edge cases are handled explicitly rather than guessed at:
+
+- No `requestBody` → no Request section.
+- No declared `4xx`/`5xx` → no Error Responses section.
+- `oneOf`/`anyOf` schemas → annotated as `(one of N possible shapes)` instead of picking one arbitrarily.
+- A schema with no constraints → no Validation section.
+- A long description with no `summary` → truncated to two sentences for Purpose.
+
+Generation is consistently well under 100ms (no spinner is ever shown) and recursive/circular DTOs are handled safely — see [Document Model](#document-model).
+
+## Document Model
+
+Before anything reaches a component, the raw OpenAPI document is normalized into an in-memory model (`tagGroups → endpoints`), implemented as pure, independently tested TypeScript with no React dependency:
+
+- `src/document-model/normalize.ts` — dereferences every `$ref` via `@apidevtools/swagger-parser` and groups endpoints by tag, preserving declared order.
+- `src/document-model/cap-depth.ts` — makes a dereferenced (and possibly cyclic, for recursive DTOs) schema safe to `JSON.stringify` for the "Copy OpenAPI" button.
+- `src/document-model/example.ts` / `schema-tree.ts` — build the type-token example payload and the navigable schema tree from the same schema, without fabricating fake data.
+- `src/document-model/filter.ts` — the client-side search used by the sidebar.
+
+All schema-walking functions (`flattenSchema`, `schemaToTreeNodes`, `extractValidationRules`) track visited nodes by object identity rather than a numeric depth cap, so a genuinely recursive DTO renders a single `(circular reference)` / `↩ circular` marker instead of unrolling N times or crashing.
+
+## Theming
+
+Dark/light theming is token-driven and reload-free:
+
+- `src/styles/tokens.ts` — `getThemeTokens(theme)` / `deriveSurfaceTokens(bg, text)`: a small fixed set of base tokens (background, text, accent) plus derived surface/border tokens, obtained by mixing `bg` toward `text` — never introducing a new hue.
+- `src/styles/apply-theme.ts` — writes the resulting CSS custom properties and `data-theme` onto `<html>`; switching themes only changes variable values, no re-render of the component tree is required.
+- `src/state/theme-store.ts` — a Zustand store that persists the chosen theme to `localStorage` and applies it synchronously before first paint (no flash of the wrong theme).
+
+## Architecture notes
+
+- **Browser-only by design** — the document model and "Copy for AI"/"Copy OpenAPI" transformers run entirely client-side; the UI has no server component beyond the static bundle.
+- **`@apidevtools/swagger-parser` over `@readme/openapi-parser`** — chosen for a smaller bundle, a working `browser` field, and equivalent OpenAPI 3.1 support (`src/__tests__/parser-spike.spec.ts` records this as a regression-protecting test). Its transitive dependency `@apidevtools/json-schema-ref-parser` calls `Buffer.isBuffer()` unconditionally, which throws in a real browser — worked around with a minimal `buffer` polyfill imported first in `src/main.tsx` (`src/polyfills.ts`).
+- **Verified against real OpenAPI 3.0 and 3.1 documents** (`public/sample-spec.json`, `public/sample-spec-31.json`), exercising `oneOf`/`anyOf`, a no-`requestBody` endpoint, an endpoint with no declared error responses, an unconstrained schema, and a long multi-sentence description — driven by Playwright against real Chrome, at desktop and mobile (375/390/768px) widths.
 
 ## Scripts
 
 ```bash
-npm run dev        # start the Vite dev server
-npm run build       # typecheck + production build
-npm run preview     # preview the production build
-npm test            # run the test suite (vitest)
+npm run dev         # start the Vite dev server
+npm run build        # typecheck + production build
+npm run preview      # preview the production build
+npm test             # run the test suite (vitest)
 npm run typecheck
 ```
+
+## Testing
+
+```bash
+npm test
+```
+
+The suite (Vitest + Testing Library) covers the document model, transformers, hooks, and every component, queried by role/text/label rather than implementation details, so visual changes don't require rewriting tests.
+
+## License
+
+[MIT](https://github.com/MarvinRF/docfy-ui/blob/main/LICENSE) © Marvin Rocha
