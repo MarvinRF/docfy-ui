@@ -1,7 +1,6 @@
 {
   "name": "docfy-ui",
   "version": "0.0.1",
-  "private": true,
   "type": "module",
   "description": "AI-first OpenAPI documentation UI — companion project to nestjs-docfy",
   "files": ["dist"],
