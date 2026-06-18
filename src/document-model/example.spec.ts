@@ -22,6 +22,33 @@ describe('resolveUnion()', () => {
   it('returns undefined schema for undefined input', () => {
     expect(resolveUnion(undefined)).toEqual({ schema: undefined });
   });
+
+  it('merges allOf branches into a single object schema', () => {
+    const base = { type: 'object', properties: { id: { type: 'string' } }, required: ['id'] };
+    const extension = { type: 'object', properties: { name: { type: 'string' } }, required: ['name'] };
+    const { schema } = resolveUnion({ allOf: [base, extension] });
+    expect(schema?.type).toBe('object');
+    expect(schema?.properties).toEqual({ id: { type: 'string' }, name: { type: 'string' } });
+    expect(schema?.required).toEqual(['id', 'name']);
+  });
+
+  it('merges allOf inside the chosen oneOf variant (regression: ProductResponse = oneOf[DigitalProduct, PhysicalProduct], each an allOf composition)', () => {
+    const base = { type: 'object', properties: { id: { type: 'string' } } };
+    const digitalProduct = { allOf: [base, { type: 'object', properties: { downloadUrl: { type: 'string' } } }] };
+    const physicalProduct = { allOf: [base, { type: 'object', properties: { weight: { type: 'number' } } }] };
+    const { schema, unionSize } = resolveUnion({ oneOf: [digitalProduct, physicalProduct] });
+    expect(schema?.type).toBe('object');
+    expect(schema?.properties).toEqual({ id: { type: 'string' }, downloadUrl: { type: 'string' } });
+    expect(unionSize).toBe(2);
+  });
+
+  it('resolves a oneOf nested inside allOf after merging', () => {
+    const base = { type: 'object', properties: { id: { type: 'string' } } };
+    const variant = { type: 'string' };
+    const { schema, unionSize } = resolveUnion({ allOf: [base], oneOf: [variant] });
+    expect(schema).toEqual(variant);
+    expect(unionSize).toBe(1);
+  });
 });
 
 describe('buildSchemaExample()', () => {
@@ -42,6 +69,27 @@ describe('buildSchemaExample()', () => {
     expect(result?.example).toEqual(['string']);
   });
 
+  it('flattens allOf composition (base + extension) into one merged object', () => {
+    const result = buildSchemaExample({
+      allOf: [
+        { type: 'object', properties: { id: { type: 'string' } } },
+        { type: 'object', properties: { name: { type: 'string' } } },
+      ],
+    });
+    expect(result?.example).toEqual({ id: 'string', name: 'string' });
+  });
+
+  it('flattens an array of oneOf-of-allOf items instead of rendering the literal string "object" (regression: GET /products data items)', () => {
+    const base = { type: 'object', properties: { id: { type: 'string' } } };
+    const digitalProduct = { allOf: [base, { type: 'object', properties: { downloadUrl: { type: 'string' } } }] };
+    const physicalProduct = { allOf: [base, { type: 'object', properties: { weight: { type: 'number' } } }] };
+    const result = buildSchemaExample({
+      type: 'object',
+      properties: { data: { type: 'array', items: { oneOf: [digitalProduct, physicalProduct] } } },
+    });
+    expect(result?.example).toEqual({ data: [{ id: 'string', downloadUrl: 'string' }] });
+  });
+
   it('reports union sizes for oneOf/anyOf encountered', () => {
     const result = buildSchemaExample({
       oneOf: [{ type: 'object', properties: { a: { type: 'string' } } }, { type: 'object', properties: { b: { type: 'string' } } }],
@@ -50,6 +98,20 @@ describe('buildSchemaExample()', () => {
   });
 
   describe('circular schemas (recursive DTOs)', () => {
+    it('detects a cycle through a recursive schema that uses allOf (regression: User.manager: User kept re-merging into fresh objects, defeating cycle detection)', () => {
+      const user: JSONSchemaLike = {
+        allOf: [
+          { type: 'object', properties: { id: { type: 'string' } } },
+          { type: 'object', properties: {} },
+        ],
+      };
+      ((user.allOf as JSONSchemaLike[])[1].properties as Record<string, unknown>).manager = user;
+
+      const result = buildSchemaExample(user);
+      expect(result?.example).toEqual({ id: 'string', manager: '(circular reference)' });
+    });
+
+
     it('replaces a direct self-reference with a single circular marker, not repeated nesting', () => {
       const user: JSONSchemaLike = { type: 'object', properties: { id: { type: 'string' } } };
       user.properties = { ...(user.properties as object), parent: user };

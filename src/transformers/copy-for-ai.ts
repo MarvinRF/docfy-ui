@@ -72,11 +72,36 @@ function extractValidationRules(
   return rules;
 }
 
+const PARAM_GROUP_LABELS: Record<string, string> = {
+  path: 'Path Parameters',
+  query: 'Query Parameters',
+  header: 'Headers',
+};
+
+/** Same grouping/order/labels as the visual `ParametersSection` — cookie params stay out of scope for both. */
+const PARAM_GROUP_ORDER = ['path', 'query', 'header'] as const;
+
 function formatParameterLine(param: ParameterInfo): string {
-  const required = param.required ? ', required' : '';
+  const requirement = param.required ? 'required' : 'optional';
   const type = typeof param.schema?.type === 'string' ? (param.schema!.type as string) : 'unknown';
   const description = param.description ? ` — ${param.description}` : '';
-  return `- ${param.name} (${param.in}${required}): ${type}${description}`;
+  return `- ${param.name} (${requirement}): ${type}${description}`;
+}
+
+/** Groups parameters into Path/Query/Headers sub-sections, each with an explicit required/optional per line. */
+function buildParametersBlock(parameters: ParameterInfo[]): string | undefined {
+  const groups = PARAM_GROUP_ORDER.map((kind) => ({
+    kind,
+    items: parameters.filter((p) => p.in === kind),
+  })).filter((g) => g.items.length > 0);
+
+  if (groups.length === 0) return undefined;
+
+  const body = groups
+    .map((g) => `${PARAM_GROUP_LABELS[g.kind]}:\n${g.items.map(formatParameterLine).join('\n')}`)
+    .join('\n');
+
+  return `Parameters:\n${body}`;
 }
 
 function buildErrorResponseLines(responses: Endpoint['responses']): string[] {
@@ -91,12 +116,8 @@ function buildErrorResponseLines(responses: Endpoint['responses']): string[] {
  * runs entirely client-side in well under 5ms.
  *
  * Section order: Endpoint → Purpose → Request → Parameters → Validation →
- * Success Response → Error Responses. Empty sections are omitted.
- *
- * Note: the worked example in the spec (section 3.3) shows sections
- * joined with a single newline, not a blank line, despite step 7's prose
- * saying "uma linha em branco entre seções" — we match the example
- * literally, since that's what's testable/verifiable.
+ * Success Response → Error Responses. Empty sections are omitted, and
+ * sections are separated by a blank line for scannability.
  */
 export function operationToAiText(endpoint: Endpoint): string {
   const sections: string[] = [];
@@ -111,10 +132,8 @@ export function operationToAiText(endpoint: Endpoint): string {
     if (result) sections.push(withUnionNotes(`Request:\n${result.json}`, result.unionSizes));
   }
 
-  const listableParams = endpoint.parameters.filter((p) => p.in !== 'cookie');
-  if (listableParams.length > 0) {
-    sections.push(`Parameters:\n${listableParams.map(formatParameterLine).join('\n')}`);
-  }
+  const parametersBlock = buildParametersBlock(endpoint.parameters);
+  if (parametersBlock) sections.push(parametersBlock);
 
   if (endpoint.requestBody?.schema) {
     const rules = extractValidationRules(endpoint.requestBody.schema);
@@ -135,5 +154,5 @@ export function operationToAiText(endpoint: Endpoint): string {
     sections.push(`Error Responses:\n${errorLines.join('\n')}`);
   }
 
-  return sections.join('\n');
+  return sections.join('\n\n');
 }

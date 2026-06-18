@@ -15,12 +15,71 @@ export const STATUS_TEXT: Record<string, string> = {
   '503': 'Service Unavailable',
 };
 
-/** Resolves `oneOf`/`anyOf` to its first variant. Returns the variant count when a union was found. */
+/**
+ * Caches `schema` (with `allOf`) -> merged result by identity. Without this,
+ * every visit to the same `$ref`'d schema (e.g. a recursive `User.manager:
+ * User` where `User` itself uses `allOf`) would produce a freshly-allocated
+ * merged object, defeating the identity-based cycle detection in
+ * `flattenSchema`/`buildNode` below — they track "have I seen this object
+ * before" via a `Set`, which only works if the same input always resolves
+ * to the same output object.
+ */
+const mergeCache = new WeakMap<JSONSchemaLike, JSONSchemaLike>();
+
+/**
+ * Shallow-merges an `allOf` composition into a single schema so downstream
+ * type/property resolution sees one object instead of an opaque array.
+ * `$ref`s are already dereferenced by `normalize.ts` by the time this runs,
+ * so each `allOf` entry is a real schema object, not a `$ref` string.
+ * Recurses so nested `allOf` (e.g. a `$ref`'d base schema that itself uses
+ * `allOf`) flattens fully; `oneOf`/`anyOf` inside a branch are left alone
+ * for `resolveUnion` to handle afterward.
+ */
+function mergeAllOf(schema: JSONSchemaLike): JSONSchemaLike {
+  const branches = schema.allOf as JSONSchemaLike[] | undefined;
+  if (!branches || branches.length === 0) return schema;
+
+  const cached = mergeCache.get(schema);
+  if (cached) return cached;
+
+  const merged: JSONSchemaLike = { ...schema };
+  mergeCache.set(schema, merged);
+  delete (merged as Record<string, unknown>).allOf;
+  let properties: Record<string, JSONSchemaLike> = { ...(merged.properties as Record<string, JSONSchemaLike> | undefined) };
+  let required: string[] = [...((merged.required as string[] | undefined) ?? [])];
+
+  for (const branch of branches) {
+    const resolvedBranch = mergeAllOf(branch);
+    if (resolvedBranch.type && !merged.type) merged.type = resolvedBranch.type;
+    if (resolvedBranch.properties) {
+      properties = { ...properties, ...(resolvedBranch.properties as Record<string, JSONSchemaLike>) };
+    }
+    if (Array.isArray(resolvedBranch.required)) {
+      required = [...required, ...(resolvedBranch.required as string[])];
+    }
+  }
+
+  if (Object.keys(properties).length > 0) {
+    merged.properties = properties;
+    if (!merged.type) merged.type = 'object';
+  }
+  if (required.length > 0) merged.required = [...new Set(required)];
+
+  return merged;
+}
+
+/** Resolves `allOf`/`oneOf`/`anyOf` to a single concrete schema. Returns the variant count when a `oneOf`/`anyOf` union was found. */
 export function resolveUnion(schema: JSONSchemaLike | undefined): { schema: JSONSchemaLike | undefined; unionSize?: number } {
   if (!schema) return { schema: undefined };
-  const union = (schema.oneOf as JSONSchemaLike[] | undefined) ?? (schema.anyOf as JSONSchemaLike[] | undefined);
-  if (union && union.length > 0) return { schema: union[0], unionSize: union.length };
-  return { schema };
+  const flattened = mergeAllOf(schema);
+  const union = (flattened.oneOf as JSONSchemaLike[] | undefined) ?? (flattened.anyOf as JSONSchemaLike[] | undefined);
+  if (union && union.length > 0) {
+    // The chosen variant (e.g. `DigitalProduct`) may itself be an `allOf`
+    // composition — merge it too, otherwise it surfaces with no `type`/
+    // `properties` and falls back to the literal string "object".
+    return { schema: mergeAllOf(union[0]), unionSize: union.length };
+  }
+  return { schema: flattened };
 }
 
 /** Text used wherever a schema cycle is detected, instead of expanding it again. */

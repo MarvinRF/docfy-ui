@@ -49,7 +49,7 @@ describe('<Shell />', () => {
   it('renders the endpoint detail when navigating to /:tag/:operationId', () => {
     renderShell('/users/findAllUsers');
     expect(screen.getByRole('heading', { name: 'List all users' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Copy for AI' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Copy as a Prompt' })).toBeInTheDocument();
   });
 
   it('opens the search modal via the sidebar search trigger', async () => {

@@ -10,7 +10,7 @@ describe('<ResponsesSection />', () => {
     expect(container.firstChild).toBeNull();
   });
 
-  it('renders one card per response, in declaration order', () => {
+  it('renders one row per response, in declaration order', () => {
     const responses: ResponseInfo[] = [
       { status: '200', description: 'OK', contentType: undefined, schema: undefined },
       { status: '404', description: 'Not found', contentType: undefined, schema: undefined },
@@ -26,17 +26,17 @@ describe('<ResponsesSection />', () => {
     expect(screen.getByText('Internal Server Error')).toBeInTheDocument();
   });
 
-  it('renders the content-type when present', () => {
-    render(<ResponsesSection responses={[{ status: '200', description: 'OK', contentType: 'application/json', schema: undefined }]} />);
-    expect(screen.getByText('application/json')).toBeInTheDocument();
-  });
-
-  it('renders a schema tree when the response has a schema', () => {
-    render(
+  it('opens only the first row by default', () => {
+    const { container } = render(
       <ResponsesSection
-        responses={[{ status: '200', description: 'OK', contentType: 'application/json', schema: { type: 'object', properties: { id: { type: 'string' } } } }]}
+        responses={[
+          { status: '200', description: 'OK', contentType: undefined, schema: undefined },
+          { status: '404', description: 'Not found', contentType: undefined, schema: undefined },
+        ]}
       />,
     );
-    expect(screen.getByText('id')).toBeInTheDocument();
+    const bodies = container.querySelectorAll('.grid');
+    expect(bodies[0]?.className).toContain('grid-rows-[1fr]');
+    expect(bodies[1]?.className).toContain('grid-rows-[0fr]');
   });
 });

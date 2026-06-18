@@ -18,7 +18,7 @@ function baseEndpoint(overrides: Partial<Endpoint> = {}): Endpoint {
 }
 
 describe('operationToAiText()', () => {
-  it('reproduces the worked example from the spec (section 3.3), modulo the documented type-vs-format decision', () => {
+  it('joins sections with a blank line and groups parameters with explicit required/optional', () => {
     const endpoint = baseEndpoint({
       method: 'POST',
       path: '/auth/register',
@@ -60,26 +60,12 @@ describe('operationToAiText()', () => {
     expect(text).toBe(
       [
         'Endpoint: POST /auth/register',
-        'Purpose:',
-        'Register a new account.',
-        'Request:',
-        '{',
-        '  "name": "string",',
-        '  "email": "string",',
-        '  "password": "string"',
-        '}',
-        'Validation:',
-        '- email must be valid',
-        '- password min length 8',
-        'Success Response (201):',
-        '{',
-        '  "id": "string",',
-        '  "email": "string"',
-        '}',
-        'Error Responses:',
-        '400 Validation Error',
-        '409 Email already exists',
-      ].join('\n'),
+        'Purpose:\nRegister a new account.',
+        'Request:\n{\n  "name": "string",\n  "email": "string",\n  "password": "string"\n}',
+        'Validation:\n- email must be valid\n- password min length 8',
+        'Success Response (201):\n{\n  "id": "string",\n  "email": "string"\n}',
+        'Error Responses:\n400 Validation Error\n409 Email already exists',
+      ].join('\n\n'),
     );
   });
 
@@ -118,7 +104,37 @@ describe('operationToAiText()', () => {
     });
     const text = operationToAiText(endpoint);
     expect(text).not.toContain('Request:');
-    expect(text).toContain('Parameters:\n- id (path, required): string');
+    expect(text).toContain('Parameters:\nPath Parameters:\n- id (required): string');
+  });
+
+  it('groups parameters into Path/Query/Headers sub-sections, each with an explicit required/optional', () => {
+    const endpoint = baseEndpoint({
+      method: 'GET',
+      path: '/users',
+      parameters: [
+        { name: 'page', in: 'query', required: false, schema: { type: 'integer' }, description: 'Current page' },
+        { name: 'search', in: 'query', required: false, schema: { type: 'string' }, description: undefined },
+        { name: 'id', in: 'path', required: true, schema: { type: 'string' }, description: undefined },
+        { name: 'x-api-key', in: 'header', required: true, schema: { type: 'string' }, description: undefined },
+        { name: 'session', in: 'cookie', required: false, schema: { type: 'string' }, description: undefined },
+      ],
+    });
+
+    const text = operationToAiText(endpoint);
+
+    expect(text).toContain(
+      [
+        'Parameters:',
+        'Path Parameters:',
+        '- id (required): string',
+        'Query Parameters:',
+        '- page (optional): integer — Current page',
+        '- search (optional): string',
+        'Headers:',
+        '- x-api-key (required): string',
+      ].join('\n'),
+    );
+    expect(text).not.toContain('session');
   });
 
   it('represents an array request body as [ {...item schema...} ]', () => {

@@ -1,28 +1,87 @@
 {
-  "openapi": "3.0.3",
+  "openapi": "3.1.0",
   "info": {
-    "title": "Sample API",
+    "title": "Sample ERP API",
     "version": "1.0.0",
-    "description": "API for user management"
+    "description": "Comprehensive ERP API fixture containing users, products, inventory, orders, files and reports modules."
   },
   "tags": [
     {
       "name": "users",
       "description": "User operations"
+    },
+    {
+      "name": "products",
+      "description": "Product operations"
+    },
+    {
+      "name": "inventory",
+      "description": "Inventory operations"
+    },
+    {
+      "name": "orders",
+      "description": "Order operations"
+    },
+    {
+      "name": "files",
+      "description": "File operations"
+    },
+    {
+      "name": "reports",
+      "description": "Report operations"
     }
   ],
   "paths": {
+    "/health": {
+      "get": {
+        "operationId": "getHealth",
+        "summary": "Health check",
+        "description": "Returns the current operational status of the service, including availability indicators and uptime metrics. This endpoint is commonly consumed by monitoring platforms, deployment pipelines, load balancers, and orchestration systems to determine whether the application is healthy enough to receive production traffic.",
+        "responses": {
+          "200": {
+            "description": "Service healthy",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HealthStatus"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Service unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected health check failure",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+
     "/users": {
       "get": {
         "operationId": "findAllUsers",
-        "summary": "List all users",
-        "description": "Returns a paginated list of users.",
+        "summary": "List users",
+        "description": "Returns a paginated collection of users registered in the platform. This endpoint is heavily used by administrative dashboards, customer support tools, reporting systems, and internal workflows that need to browse large user datasets efficiently.",
         "tags": ["users"],
         "parameters": [
           {
             "name": "page",
             "in": "query",
-            "description": "Current page",
             "schema": {
               "type": "integer",
               "default": 1
@@ -31,20 +90,9 @@
           {
             "name": "limit",
             "in": "query",
-            "description": "Items per page",
             "schema": {
               "type": "integer",
-              "minimum": 1,
-              "maximum": 100,
               "default": 20
-            }
-          },
-          {
-            "name": "search",
-            "in": "query",
-            "description": "Filter by name or email",
-            "schema": {
-              "type": "string"
             }
           }
         ],
@@ -55,21 +103,26 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/PaginatedUsersResponse"
-                },
-                "example": {
-                  "data": [
-                    {
-                      "id": "4f5bbaea-6830-4d8d-8baf-1ef7f0c9240a",
-                      "name": "John Doe",
-                      "email": "john@example.com",
-                      "role": "ADMIN"
-                    }
-                  ],
-                  "meta": {
-                    "page": 1,
-                    "limit": 20,
-                    "total": 125
-                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid pagination or filter parameters",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -80,7 +133,7 @@
       "post": {
         "operationId": "createUser",
         "summary": "Create user",
-        "description": "Creates a new user.",
+        "description": "Creates a new user account within the platform. The operation performs validation checks, uniqueness verification, role assignment, and persistence of user information. Creating a user may also trigger onboarding workflows and integration events consumed by downstream services.",
         "tags": ["users"],
         "requestBody": {
           "required": true,
@@ -88,29 +141,17 @@
             "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/CreateUserDto"
-              },
-              "example": {
-                "name": "John Doe",
-                "email": "john@example.com",
-                "password": "12345678"
               }
             }
           }
         },
         "responses": {
           "201": {
-            "description": "User created",
+            "description": "User created successfully",
             "content": {
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/User"
-                },
-                "example": {
-                  "id": "4f5bbaea-6830-4d8d-8baf-1ef7f0c9240a",
-                  "name": "John Doe",
-                  "email": "john@example.com",
-                  "role": "USER",
-                  "createdAt": "2026-06-16T12:00:00Z"
                 }
               }
             }
@@ -120,7 +161,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
+                  "$ref": "#/components/schemas/ValidationErrorResponse"
                 }
               }
             }
@@ -143,6 +184,7 @@
       "get": {
         "operationId": "findUserById",
         "summary": "Get user by id",
+        "description": "Retrieves a single user by its unique identifier. This endpoint powers profile screens, permission management interfaces, audit investigations, and administrative workflows throughout the platform.",
         "tags": ["users"],
         "parameters": [
           {
@@ -167,7 +209,442 @@
             }
           },
           "404": {
-            "description": "User not found"
+            "description": "User not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Access denied",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+
+      "patch": {
+        "operationId": "updateUser",
+        "summary": "Update user",
+        "description": "Applies a partial update to an existing user record. Only the fields included in the request payload are modified while all other attributes remain unchanged.",
+        "tags": ["users"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateUserDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "User updated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/User"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "User not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+
+      "delete": {
+        "operationId": "deleteUser",
+        "summary": "Delete user",
+        "description": "Permanently removes a user account from the platform. Depending on compliance requirements, associated records may be archived, anonymized, or retained for audit purposes.",
+        "tags": ["users"],
+        "responses": {
+          "204": {
+            "description": "User deleted successfully"
+          },
+          "404": {
+            "description": "User not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "User cannot be deleted due to active dependencies",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+
+    "/products": {
+      "get": {
+        "operationId": "findAllProducts",
+        "summary": "List products",
+        "description": "Returns a paginated catalog of products available within the platform. Product records may represent either physical or digital goods and can contain metadata consumed by integrations and analytics systems.",
+        "tags": ["products"],
+        "responses": {
+          "200": {
+            "description": "Products found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaginatedProductsResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid filter or pagination parameters",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+
+      "post": {
+        "operationId": "createProduct",
+        "summary": "Create product",
+        "description": "Creates a new product within the catalog. The request may represent either a digital product or a physical product using a oneOf schema definition.",
+        "tags": ["products"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "oneOf": [
+                  {
+                    "$ref": "#/components/schemas/DigitalProduct"
+                  },
+                  {
+                    "$ref": "#/components/schemas/PhysicalProduct"
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Product created successfully"
+          },
+          "400": {
+            "description": "Product validation failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "SKU already exists",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+
+    "/inventory/{productId}": {
+      "patch": {
+        "operationId": "adjustInventory",
+        "summary": "Adjust inventory",
+        "description": "Applies a stock adjustment to a specific product. Inventory changes may originate from warehouse operations, purchase orders, stock audits, returns, or manual administrative actions.",
+        "tags": ["inventory"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/InventoryAdjustment"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Inventory adjusted successfully"
+          },
+          "404": {
+            "description": "Product not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Inventory operation violates business rules",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+
+    "/orders": {
+      "get": {
+        "operationId": "findAllOrders",
+        "summary": "List orders",
+        "description": "Returns a paginated collection of customer orders used by operational dashboards, fulfillment systems, customer service workflows, and reporting tools.",
+        "tags": ["orders"],
+        "responses": {
+          "200": {
+            "description": "Orders found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaginatedOrdersResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid query parameters",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+
+      "post": {
+        "operationId": "createOrder",
+        "summary": "Create order",
+        "description": "Creates a new order containing one or more line items. Successful creation may trigger payment authorization, inventory reservation, shipment preparation, and customer notification workflows.",
+        "tags": ["orders"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateOrderDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Order created successfully"
+          },
+          "400": {
+            "description": "Order validation failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Insufficient inventory to fulfill order",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+
+    "/orders/{id}/cancel": {
+      "post": {
+        "operationId": "cancelOrder",
+        "summary": "Cancel order",
+        "description": "Cancels an existing order without requiring a request body. Depending on the order lifecycle stage, cancellation may release inventory reservations, trigger refunds, and notify fulfillment systems.",
+        "tags": ["orders"],
+        "responses": {
+          "200": {
+            "description": "Order cancelled successfully"
+          },
+          "404": {
+            "description": "Order not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Order cannot be cancelled in its current state",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+
+    "/files/upload": {
+      "post": {
+        "operationId": "uploadFile",
+        "summary": "Upload file",
+        "description": "Uploads a file using multipart/form-data. Uploaded files may be validated, scanned for malware, replicated across storage systems, and processed for metadata extraction before becoming available to downstream consumers.",
+        "tags": ["files"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/FileUpload"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "File uploaded successfully"
+          },
+          "400": {
+            "description": "Invalid file payload",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationErrorResponse"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Uploaded file exceeds maximum allowed size",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+
+    "/reports/export": {
+      "post": {
+        "operationId": "exportReport",
+        "summary": "Export report",
+        "description": "Generates and exports a PDF report containing aggregated business information collected from multiple subsystems. Generation may involve expensive calculations and large dataset processing.",
+        "tags": ["reports"],
+        "responses": {
+          "200": {
+            "description": "PDF generated successfully",
+            "content": {
+              "application/pdf": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid report parameters",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Report generation service temporarily unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
           }
         }
       }
@@ -176,39 +653,43 @@
 
   "components": {
     "schemas": {
-      "User": {
+      "BaseEntity": {
         "type": "object",
-        "description": "Represents a system user",
-        "required": ["id", "name", "email", "role"],
+        "required": ["id", "createdAt", "updatedAt"],
         "properties": {
           "id": {
             "type": "string",
             "format": "uuid",
-            "description": "Unique identifier"
-          },
-          "name": {
-            "type": "string",
-            "description": "User full name"
-          },
-          "email": {
-            "type": "string",
-            "format": "email",
-            "description": "User email"
-          },
-          "role": {
-            "type": "string",
-            "enum": ["ADMIN", "USER", "MANAGER"]
+            "readOnly": true
           },
           "createdAt": {
             "type": "string",
-            "format": "date-time"
+            "format": "date-time",
+            "readOnly": true
           },
           "updatedAt": {
             "type": "string",
-            "format": "date-time"
+            "format": "date-time",
+            "readOnly": true
+          }
+        }
+      },
+
+      "PaginationMeta": {
+        "type": "object",
+        "required": ["page", "limit", "total"],
+        "properties": {
+          "page": {
+            "type": "integer",
+            "minimum": 1
           },
-          "parent": {
-            "$ref": "#/components/schemas/User"
+          "limit": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "total": {
+            "type": "integer",
+            "minimum": 0
           }
         }
       },
@@ -219,8 +700,7 @@
         "properties": {
           "name": {
             "type": "string",
-            "minLength": 3,
-            "maxLength": 120
+            "minLength": 3
           },
           "email": {
             "type": "string",
@@ -228,13 +708,279 @@
           },
           "password": {
             "type": "string",
-            "minLength": 8
+            "minLength": 8,
+            "writeOnly": true
+          }
+        }
+      },
+
+      "UpdateUserDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string",
+            "format": "email"
+          }
+        }
+      },
+
+      "User": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/BaseEntity"
+          },
+          {
+            "type": "object",
+            "required": ["name", "email", "role"],
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "email": {
+                "type": "string",
+                "format": "email"
+              },
+              "role": {
+                "type": "string",
+                "enum": ["ADMIN", "MANAGER", "USER"]
+              },
+              "manager": {
+                "$ref": "#/components/schemas/User"
+              }
+            }
+          }
+        ]
+      },
+
+      "CreateProductDto": {
+        "oneOf": [
+          {
+            "$ref": "#/components/schemas/DigitalProduct"
+          },
+          {
+            "$ref": "#/components/schemas/PhysicalProduct"
+          }
+        ]
+      },
+
+      "UpdateProductDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "price": {
+            "type": "number"
+          },
+          "stock": {
+            "type": "integer"
+          },
+          "metadata": {
+            "type": "object",
+            "additionalProperties": true
+          }
+        }
+      },
+
+      "Product": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/BaseEntity"
+          },
+          {
+            "type": "object",
+            "required": ["sku", "name", "price"],
+            "properties": {
+              "sku": {
+                "type": "string"
+              },
+              "legacySku": {
+                "type": "string",
+                "deprecated": true
+              },
+              "name": {
+                "type": "string"
+              },
+              "stock": {
+                "type": "integer"
+              },
+              "price": {
+                "type": "number"
+              },
+              "metadata": {
+                "type": "object",
+                "additionalProperties": true
+              }
+            }
+          }
+        ]
+      },
+
+      "DigitalProduct": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/Product"
+          },
+          {
+            "type": "object",
+            "required": ["downloadUrl"],
+            "properties": {
+              "downloadUrl": {
+                "type": "string",
+                "format": "uri"
+              }
+            }
+          }
+        ]
+      },
+
+      "PhysicalProduct": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/Product"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "weight": {
+                "type": "number"
+              },
+              "dimensions": {
+                "type": "string"
+              }
+            }
+          }
+        ]
+      },
+
+      "ProductResponse": {
+        "oneOf": [
+          {
+            "$ref": "#/components/schemas/DigitalProduct"
+          },
+          {
+            "$ref": "#/components/schemas/PhysicalProduct"
+          }
+        ]
+      },
+
+      "OrderItem": {
+        "type": "object",
+        "required": ["product", "quantity", "unitPrice"],
+        "properties": {
+          "product": {
+            "$ref": "#/components/schemas/ProductResponse"
+          },
+          "quantity": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "unitPrice": {
+            "type": "number",
+            "minimum": 0
+          }
+        }
+      },
+
+      "CreateOrderDto": {
+        "type": "object",
+        "required": ["customerId", "items"],
+        "properties": {
+          "customerId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "items": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "$ref": "#/components/schemas/OrderItem"
+            }
+          }
+        }
+      },
+
+      "Order": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/BaseEntity"
+          },
+          {
+            "type": "object",
+            "required": ["customer", "items", "status", "total"],
+            "properties": {
+              "customer": {
+                "$ref": "#/components/schemas/User"
+              },
+              "items": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/OrderItem"
+                }
+              },
+              "status": {
+                "type": "string",
+                "enum": ["PENDING", "PAID", "SHIPPED", "CANCELLED"]
+              },
+              "total": {
+                "type": "number"
+              }
+            }
+          }
+        ]
+      },
+
+      "InventoryAdjustment": {
+        "type": "object",
+        "required": ["productId", "quantity"],
+        "properties": {
+          "productId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "quantity": {
+            "type": "integer"
+          },
+          "reason": {
+            "type": "string"
+          }
+        }
+      },
+
+      "FileUpload": {
+        "type": "object",
+        "required": ["file"],
+        "properties": {
+          "file": {
+            "type": "string",
+            "format": "binary"
+          },
+          "folder": {
+            "type": "string"
+          }
+        }
+      },
+
+      "HealthStatus": {
+        "type": "object",
+        "required": ["status"],
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": ["ok", "degraded", "down"]
+          },
+          "uptimeSeconds": {
+            "type": "number"
           }
         }
       },
 
       "PaginatedUsersResponse": {
         "type": "object",
+        "required": ["data", "meta"],
         "properties": {
           "data": {
             "type": "array",
@@ -248,23 +994,41 @@
         }
       },
 
-      "PaginationMeta": {
+      "PaginatedProductsResponse": {
         "type": "object",
+        "required": ["data", "meta"],
         "properties": {
-          "page": {
-            "type": "integer"
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProductResponse"
+            }
           },
-          "limit": {
-            "type": "integer"
+          "meta": {
+            "$ref": "#/components/schemas/PaginationMeta"
+          }
+        }
+      },
+
+      "PaginatedOrdersResponse": {
+        "type": "object",
+        "required": ["data", "meta"],
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Order"
+            }
           },
-          "total": {
-            "type": "integer"
+          "meta": {
+            "$ref": "#/components/schemas/PaginationMeta"
           }
         }
       },
 
       "ErrorResponse": {
         "type": "object",
+        "required": ["success", "message"],
         "properties": {
           "success": {
             "type": "boolean"
@@ -279,6 +1043,25 @@
             }
           }
         }
+      },
+
+      "ValidationErrorResponse": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/ErrorResponse"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "errors": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        ]
       }
     }
   }

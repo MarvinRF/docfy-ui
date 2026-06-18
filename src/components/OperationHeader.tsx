@@ -1,5 +1,6 @@
 import { ChevronRight } from 'lucide-react';
 import type { Endpoint } from '../document-model/types';
+import { MethodBadge } from './MethodBadge';
 
 export interface OperationHeaderProps {
   endpoint: Endpoint;
@@ -7,9 +8,8 @@ export interface OperationHeaderProps {
 
 /**
  * Breadcrumb (tag) + operation title (summary, falling back to operationId,
- * then path) + description. The method/path chip lives in `RequestPanel`
- * only — repeating it here would duplicate it visually right next to the
- * playground panel on wide screens.
+ * then path) + method/path chip + description — same structure as the
+ * reference's `EndpointPage` header.
  */
 export function OperationHeader({ endpoint }: OperationHeaderProps) {
   const title = endpoint.summary ?? endpoint.operationId ?? endpoint.path;
@@ -27,8 +27,13 @@ export function OperationHeader({ endpoint }: OperationHeaderProps) {
 
       <h1 className="text-balance text-[28px] font-semibold leading-tight tracking-tight">{title}</h1>
 
+      <div className="mt-5 inline-flex items-center gap-2 rounded-lg border border-border bg-surface-sunken px-3 py-2 font-mono text-[12.5px]">
+        <MethodBadge method={endpoint.method} />
+        <span className="text-foreground">{endpoint.path}</span>
+      </div>
+
       {endpoint.description && (
-        <p className="mt-2 max-w-2xl text-[15px] leading-relaxed text-muted-foreground">{endpoint.description}</p>
+        <p className="mt-5 max-w-2xl text-[15px] leading-relaxed text-muted-foreground">{endpoint.description}</p>
       )}
     </div>
   );

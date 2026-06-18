@@ -1,4 +1,4 @@
-const DEFAULT_MAX_DEPTH = 6;
+const DEFAULT_MAX_DEPTH = 50;
 
 export interface CapDepthOptions {
   maxDepth?: number;

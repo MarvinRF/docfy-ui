@@ -93,6 +93,25 @@ describe('schemaToTreeNodes()', () => {
     expect(nodes[0]).toMatchObject({ name: 'role', type: 'string' });
   });
 
+  it('merges allOf into an object node instead of falling back to "unknown"', () => {
+    const nodes = schemaToTreeNodes({
+      type: 'object',
+      properties: {
+        owner: {
+          allOf: [
+            { type: 'object', properties: { id: { type: 'string' } } },
+            { type: 'object', properties: { name: { type: 'string' } } },
+          ],
+        },
+      },
+    });
+    expect(nodes[0]).toMatchObject({ name: 'owner', type: 'object' });
+    expect(nodes[0].children).toEqual([
+      { name: 'id', type: 'string', required: false, nullable: false },
+      { name: 'name', type: 'string', required: false, nullable: false },
+    ]);
+  });
+
   it('reproduces the customers search example tree shape from the user request', () => {
     const nodes = schemaToTreeNodes({
       type: 'object',

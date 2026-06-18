@@ -1,71 +1,65 @@
 import { useState } from 'react';
 import type { ResponseInfo } from '../document-model/types';
-import { buildSchemaExample } from '../document-model/example';
-import { schemaToTreeNodes } from '../document-model/schema-tree';
-import { SchemaTree } from './SchemaTree';
+import { buildSchemaExample, pickPrimarySuccessResponse } from '../document-model/example';
 import { CodeBlock } from './CodeBlock';
 import { cn } from '../lib/utils';
 
 export interface ResponseViewerProps {
-  response: ResponseInfo | undefined;
+  responses: ResponseInfo[];
 }
 
-type Tab = 'response' | 'schema';
-const TABS: Tab[] = ['response', 'schema'];
-
-/** Fixed content height — long bodies/schemas scroll instead of pushing the layout around. */
-const CONTENT_HEIGHT = 'h-80';
+function statusClasses(status: string): string {
+  if (status.startsWith('2')) return 'bg-success/15 text-success';
+  if (status.startsWith('4')) return 'bg-warning/15 text-warning';
+  if (status.startsWith('5')) return 'bg-destructive/15 text-destructive';
+  return 'bg-muted text-foreground';
+}
 
 /**
- * Tabbed Response/Schema view for the primary success response. No
- * "Headers" tab — OpenAPI response headers aren't extracted by the
- * Document Model yet (Phase 1 didn't need them); adding it is a
- * follow-up, not a silent gap.
+ * Mirrors the reference's `RightPanel` response card exactly: a "Response"
+ * label on the left, one tab per declared status on the right (colored by
+ * status range when selected), single `CodeBlock` body below. Defaults to
+ * the primary success status, same as before this took the full list.
  */
-export function ResponseViewer({ response }: ResponseViewerProps) {
-  const [tab, setTab] = useState<Tab>('response');
+export function ResponseViewer({ responses }: ResponseViewerProps) {
+  const defaultStatus = pickPrimarySuccessResponse(responses)?.status ?? responses[0]?.status;
+  const [status, setStatus] = useState<string | undefined>(defaultStatus);
 
-  if (!response) {
+  const active = responses.find((r) => r.status === status) ?? responses[0];
+
+  if (!active) {
     return (
-      <div className="flex h-80 min-w-0 items-center justify-center rounded-2xl border border-border bg-surface-elevated shadow-warm">
-        <p className="text-sm text-muted-foreground">No success response declared.</p>
+      <div className="flex h-40 min-w-0 items-center justify-center rounded-2xl border border-border bg-surface shadow-warm">
+        <p className="text-sm text-muted-foreground">No responses declared.</p>
       </div>
     );
   }
 
-  const example = buildSchemaExample(response.schema);
-  const nodes = schemaToTreeNodes(response.schema);
+  const example = buildSchemaExample(active.schema);
+  const code = example ? example.json : `// ${active.status} — No Content`;
 
   return (
-    <div className="min-w-0 overflow-hidden rounded-2xl border border-border bg-surface-elevated shadow-warm">
-      <div role="tablist" aria-label="Response viewer" className="flex gap-1 border-b border-border p-2">
-        {TABS.map((t) => (
-          <button
-            key={t}
-            type="button"
-            role="tab"
-            aria-selected={tab === t}
-            onClick={() => setTab(t)}
-            className={cn(
-              'rounded-md px-2.5 py-1 text-[11.5px] font-medium capitalize transition-colors duration-150',
-              tab === t ? 'bg-primary text-primary-foreground' : 'text-foreground hover:bg-muted',
-            )}
-          >
-            {t}
-          </button>
-        ))}
+    <div className="min-w-0 overflow-hidden rounded-2xl border border-border bg-surface shadow-warm">
+      <div className="flex items-center gap-1 border-b border-border bg-surface-sunken px-2 py-1.5">
+        <span className="px-2 text-[10.5px] font-semibold uppercase tracking-wider text-muted-foreground">Response</span>
+        <div className="ml-auto flex items-center gap-1">
+          {responses.map((r) => (
+            <button
+              key={r.status}
+              type="button"
+              onClick={() => setStatus(r.status)}
+              className={cn(
+                'rounded-md px-2 py-1 font-mono text-[11px] transition-colors',
+                r.status === active.status ? statusClasses(r.status) : 'text-muted-foreground hover:bg-muted',
+              )}
+            >
+              {r.status}
+            </button>
+          ))}
+        </div>
       </div>
-
-      <div key={tab} className={cn('themed-scroll animate-fade-in overflow-y-auto', CONTENT_HEIGHT, tab === 'response' ? '' : 'p-3')}>
-        {tab === 'response' ? (
-          example ? (
-            <CodeBlock code={example.json} language="json" variant="inline" showCopy={false} className="rounded-none ring-0" />
-          ) : (
-            <p className="p-3 text-sm text-muted-foreground">No content</p>
-          )
-        ) : (
-          <SchemaTree nodes={nodes} />
-        )}
+      <div key={active.status} className="animate-fade-in-up">
+        <CodeBlock code={code} language="json" variant="inline" showCopy className="rounded-none ring-0" />
       </div>
     </div>
   );

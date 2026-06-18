@@ -32,20 +32,34 @@ describe('<EndpointDetail />', () => {
     render(<EndpointDetail endpoint={makeEndpoint()} baseUrl="https://api.example.com" />);
     expect(screen.getByRole('heading', { name: 'Register a new account' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Copy OpenAPI' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Copy for AI' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Copy as a Prompt' })).toBeInTheDocument();
   });
 
   it('renders the request panel with the right method/path', () => {
     render(<EndpointDetail endpoint={makeEndpoint()} baseUrl="https://api.example.com" />);
-    const header = screen.getByTestId('request-panel-header');
-    expect(within(header).getByText('POST')).toBeInTheDocument();
-    expect(within(header).getByText('/auth/register')).toBeInTheDocument();
+    // Rendered twice — a sticky `xl:block` panel and an `xl:hidden` one for narrower
+    // screens, mirroring the reference's responsive layout (both exist in the DOM;
+    // CSS alone decides which one is visible at a given breakpoint).
+    const headers = screen.getAllByTestId('request-panel-header');
+    expect(headers).toHaveLength(2);
+    for (const header of headers) {
+      expect(within(header).getByText('POST')).toBeInTheDocument();
+      expect(within(header).getByText('/auth/register')).toBeInTheDocument();
+    }
+  });
+
+  it('renders the request body section with the declared schema', () => {
+    render(<EndpointDetail endpoint={makeEndpoint()} baseUrl="https://api.example.com" />);
+    const section = screen.getByTestId('request-body-section');
+    expect(within(section).getByText('Request Body')).toBeInTheDocument();
+    expect(section.textContent).toMatch(/"email": "string"/);
   });
 
   it('renders the responses section with both declared statuses', () => {
     render(<EndpointDetail endpoint={makeEndpoint()} baseUrl="https://api.example.com" />);
-    expect(screen.getByText('201')).toBeInTheDocument();
-    expect(screen.getByText('400')).toBeInTheDocument();
+    const section = screen.getByTestId('responses-section');
+    expect(within(section).getByText('201')).toBeInTheDocument();
+    expect(within(section).getByText('400')).toBeInTheDocument();
   });
 
   it('"Copy OpenAPI" copies valid JSON for the endpoint', async () => {
@@ -63,14 +77,14 @@ describe('<EndpointDetail />', () => {
     expect(parsed.path).toBe('/auth/register');
   });
 
-  it('"Copy for AI" copies the operationToAiText() output', async () => {
+  it('"Copy as a Prompt" copies the operationToAiText() output', async () => {
     const user = userEvent.setup();
     let copiedText = '';
     const writeText = (text: string) => { copiedText = text; return Promise.resolve(); };
     Object.defineProperty(navigator, 'clipboard', { value: { writeText }, configurable: true });
 
     render(<EndpointDetail endpoint={makeEndpoint()} baseUrl="https://api.example.com" />);
-    await user.click(screen.getByRole('button', { name: 'Copy for AI' }));
+    await user.click(screen.getByRole('button', { name: 'Copy as a Prompt' }));
 
     expect(copiedText).toContain('Endpoint: POST /auth/register');
     expect(copiedText).toContain('Success Response (201):');

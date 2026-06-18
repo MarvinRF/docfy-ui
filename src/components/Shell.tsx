@@ -1,11 +1,11 @@
-import { useEffect, useState } from 'react';
-import { Routes, Route } from 'react-router-dom';
-import { Menu } from 'lucide-react';
-import type { TagGroup } from '../document-model/types';
-import { Sidebar } from './Sidebar';
-import { SearchModal } from './SearchModal';
-import { EndpointRoute } from './EndpointRoute';
-import { EmptyState } from './EmptyState';
+import { useEffect, useState } from "react";
+import { Routes, Route } from "react-router-dom";
+import { Menu } from "lucide-react";
+import type { TagGroup } from "../document-model/types";
+import { Sidebar } from "./Sidebar";
+import { SearchModal } from "./SearchModal";
+import { EndpointRoute } from "./EndpointRoute";
+import { EmptyState } from "./EmptyState";
 
 export interface ShellProps {
   tagGroups: TagGroup[];
@@ -24,13 +24,13 @@ export function Shell({ tagGroups }: ShellProps) {
 
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
-      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
         e.preventDefault();
         setSearchOpen(true);
       }
     }
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
   }, []);
 
   return (
@@ -41,7 +41,11 @@ export function Shell({ tagGroups }: ShellProps) {
         onCloseMobile={() => setSidebarOpen(false)}
         onSearchOpen={() => setSearchOpen(true)}
       />
-      <SearchModal open={searchOpen} onOpenChange={setSearchOpen} tagGroups={tagGroups} />
+      <SearchModal
+        open={searchOpen}
+        onOpenChange={setSearchOpen}
+        tagGroups={tagGroups}
+      />
 
       <div className="flex min-w-0 flex-1 flex-col">
         <div className="sticky top-0 z-20 flex items-center justify-between border-b border-border bg-surface/80 px-4 py-2 backdrop-blur lg:hidden">
@@ -53,7 +57,9 @@ export function Shell({ tagGroups }: ShellProps) {
           >
             <Menu size={18} />
           </button>
-          <span className="font-mono text-[11.5px] text-muted-foreground">docfy</span>
+          <span className="font-mono text-[11.5px] text-muted-foreground">
+            Docfy - Api Reference
+          </span>
           <span className="w-7" />
         </div>
 
@@ -63,7 +69,10 @@ export function Shell({ tagGroups }: ShellProps) {
             className="dot-grid pointer-events-none absolute inset-x-0 top-0 -z-10 h-72 opacity-50 mask-[linear-gradient(to_bottom,black,transparent)]"
           />
           <Routes>
-            <Route path="/:tag/:operationId" element={<EndpointRoute tagGroups={tagGroups} />} />
+            <Route
+              path="/:tag/:operationId"
+              element={<EndpointRoute tagGroups={tagGroups} />}
+            />
             <Route path="*" element={<EmptyState />} />
           </Routes>
         </main>

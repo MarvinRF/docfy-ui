@@ -37,14 +37,14 @@ describe('capDepth()', () => {
     expect(result.updatedBy).toEqual({ name: 'admin' });
   });
 
-  it('caps nesting at the default max depth (6) with "[Object]"', () => {
+  it('caps nesting at a given max depth with "[Object]"', () => {
     // Build 8 levels of nesting: { l0: { l1: { l2: ... } } }
     let deepest: Record<string, unknown> = { leaf: true };
     for (let i = 7; i >= 0; i--) {
       deepest = { [`l${i}`]: deepest };
     }
 
-    const result = capDepth(deepest) as any;
+    const result = capDepth(deepest, { maxDepth: 6 }) as any;
     // root is depth 0; l0..l4 (5 nested levels) stay objects, l5's value
     // is computed at depth 6 and gets capped.
     let cursor = result;
@@ -61,13 +61,33 @@ describe('capDepth()', () => {
       deepest = [deepest];
     }
 
-    const result = capDepth(deepest) as any[];
+    const result = capDepth(deepest, { maxDepth: 6 }) as any[];
     let cursor: any = result;
     for (let i = 0; i < 5; i++) {
       expect(Array.isArray(cursor[0]) || cursor[0] === '[Array]').toBe(true);
       if (cursor[0] === '[Array]') return;
       cursor = cursor[0];
     }
+  });
+
+  it('does not cap a legitimately deep OpenAPI schema at the default depth (regression: GET /users 200 response was truncated to "[Object]")', () => {
+    const deepSchema = {
+      responses: [
+        {
+          schema: {
+            type: 'object',
+            properties: {
+              data: { type: 'array', items: { type: 'object', properties: { id: { type: 'string' } } } },
+              meta: { type: 'object', required: ['page'], properties: { page: { type: 'integer' } } },
+            },
+          },
+        },
+      ],
+    };
+
+    const result = capDepth(deepSchema) as any;
+    expect(result.responses[0].schema.properties.data.items).toEqual({ type: 'object', properties: { id: { type: 'string' } } });
+    expect(result.responses[0].schema.properties.meta.required).toEqual(['page']);
   });
 
   it('respects a custom maxDepth option', () => {
