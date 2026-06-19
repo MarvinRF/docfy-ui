@@ -9,6 +9,16 @@ function getSpecUrl(): string {
   return new URLSearchParams(window.location.search).get('spec') ?? '/api-json';
 }
 
+/**
+ * Mount prefix the host server injected via `window.__DOCFY_BASE_PATH__`
+ * (see DocfyUiModule.setup). Falls back to '/' when served standalone
+ * (e.g. `vite dev`) so BrowserRouter behaves as before in that case.
+ */
+function getBasename(): string {
+  if (typeof window === 'undefined') return '/';
+  return window.__DOCFY_BASE_PATH__ ?? '/';
+}
+
 export function App() {
   const specUrl = useMemo(getSpecUrl, []);
   const spec = useOpenApiSpec(specUrl);
@@ -22,7 +32,7 @@ export function App() {
   }
 
   return (
-    <BrowserRouter>
+    <BrowserRouter basename={getBasename()}>
       <Shell tagGroups={spec.data.tagGroups} />
     </BrowserRouter>
   );
