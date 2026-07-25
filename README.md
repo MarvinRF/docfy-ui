@@ -2,6 +2,7 @@
   <img alt="docfy-ui banner" src="./assets/banner.png" width="100%">
 </p>
 
+[![CI](https://github.com/MarvinRF/docfy-ui/actions/workflows/ci.yml/badge.svg)](https://github.com/MarvinRF/docfy-ui/actions/workflows/ci.yml)
 [![NPM version](https://img.shields.io/npm/v/docfy-ui.svg)](https://www.npmjs.com/package/docfy-ui)
 [![NPM downloads](https://img.shields.io/npm/dw/docfy-ui.svg)](https://www.npmjs.com/package/docfy-ui)
 [![GitHub last commit](https://img.shields.io/github/last-commit/MarvinRF/docfy-ui)](https://github.com/MarvinRF/docfy-ui/commits/main)
