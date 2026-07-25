@@ -58,7 +58,7 @@ export function Shell({ tagGroups }: ShellProps) {
             <Menu size={18} />
           </button>
           <span className="font-mono text-[11.5px] text-muted-foreground">
-            Docfy - Api Reference
+            Nest Docfy
           </span>
           <span className="w-7" />
         </div>

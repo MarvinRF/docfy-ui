@@ -1,9 +1,10 @@
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { ChevronDown, Hexagon, Moon, Search, Sun, X } from "lucide-react";
+import { ChevronDown, Moon, Search, Sun, X } from "lucide-react";
 import type { TagGroup } from "../document-model/types";
 import { useThemeStore } from "../state/theme-store";
 import { MethodBadge } from "./MethodBadge";
+import { NestLogo } from "./NestLogo";
 import { cn } from "../lib/utils";
 
 export interface SidebarProps {
@@ -75,11 +76,11 @@ export function Sidebar({
       >
         <div className="flex items-center justify-between gap-2 px-4 pt-4 pb-3">
           <div className="flex items-center gap-2">
-            <div className="relative grid size-8 place-items-center rounded-lg bg-primary text-primary-foreground shadow-glow">
-              <Hexagon className="size-4" strokeWidth={2.5} />
+            <div className="relative grid size-9 place-items-center rounded-lg bg-primary text-primary-foreground shadow-glow">
+              <NestLogo className="size-9 text-white dark:text-black" />
             </div>
             <span className="text-[13px] font-semibold tracking-tight">
-              Docfy - Api Reference
+              Nest Docfy - Api Reference
             </span>
           </div>
           <button

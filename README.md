@@ -1,6 +1,6 @@
-<h1 align="center">
-  docfy-ui
-</h1>
+<p align="center">
+  <img alt="docfy-ui banner" src="./assets/banner.png" width="100%">
+</p>
 
 [![NPM version](https://img.shields.io/npm/v/docfy-ui.svg)](https://www.npmjs.com/package/docfy-ui)
 [![NPM downloads](https://img.shields.io/npm/dw/docfy-ui.svg)](https://www.npmjs.com/package/docfy-ui)
@@ -9,6 +9,8 @@
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/MarvinRF/docfy-ui/blob/main/LICENSE)
 
 AI-first OpenAPI documentation UI — companion project to [nestjs-docfy](https://www.npmjs.com/package/nestjs-docfy). A lean, modern API reference UI with a **"Copy for AI"** button on every endpoint: a one-click, pre-formatted text representation optimized for pasting into an LLM prompt — instead of dumping raw OpenAPI JSON or full HTML.
+
+📖 **[Full documentation](https://www.nestdocfy.com/)**
 
 ## Table of contents
 
@@ -37,8 +39,17 @@ Most OpenAPI UIs are built for humans skimming a page — they're the wrong shap
 {
   "post": {
     "operationId": "createUser",
-    "requestBody": { "content": { "application/json": { "schema": { "$ref": "#/components/schemas/CreateUserDto" } } } },
-    "responses": { "201": { "$ref": "#/components/responses/UserCreated" }, "400": { "description": "Bad Request" } }
+    "requestBody": {
+      "content": {
+        "application/json": {
+          "schema": { "$ref": "#/components/schemas/CreateUserDto" }
+        }
+      }
+    },
+    "responses": {
+      "201": { "$ref": "#/components/responses/UserCreated" },
+      "400": { "description": "Bad Request" }
+    }
   }
 }
 ```
@@ -99,7 +110,10 @@ const app = await NestFactory.create(AppModule);
 
 DocfyUiModule.setup("/docs", app); // before SwaggerModule.setup
 
-const document = SwaggerModule.createDocument(app, new DocumentBuilder().build());
+const document = SwaggerModule.createDocument(
+  app,
+  new DocumentBuilder().build(),
+);
 SwaggerModule.setup("api", app, document); // exposes /api-json, which docfy-ui fetches by default
 
 await app.listen(3000);
@@ -121,10 +135,10 @@ Serve `dist/` with any static host (NestJS's `ServeStaticModule`, Nginx, S3 + Cl
 
 The UI has no build-time configuration — it resolves the spec to render entirely at runtime, via one rule with one override:
 
-| Source | When | Example |
-| --- | --- | --- |
+| Source                        | When                                                                                            | Example                                                                     |
+| ----------------------------- | ----------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------- |
 | `GET /api-json` (same-origin) | Default — matches what `@nestjs/swagger`'s `SwaggerModule.setup()` exposes alongside Swagger UI | `https://api.example.com/docs` → fetches `https://api.example.com/api-json` |
-| `?spec=<url>` query param | Takes precedence over the default when present | `https://docs.example.com/?spec=https://api.example.com/api-json` |
+| `?spec=<url>` query param     | Takes precedence over the default when present                                                  | `https://docs.example.com/?spec=https://api.example.com/api-json`           |
 
 If the UI is deployed on a different origin than the API, use the `?spec=` override and make sure the API's CORS configuration allows that origin to `GET` the JSON document.
 
