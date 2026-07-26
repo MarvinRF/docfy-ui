@@ -1,3 +1,11 @@
+# [0.2.0](https://github.com/MarvinRF/docfy-ui/compare/v0.1.0...v0.2.0) (2026-07-26)
+
+
+### Features
+
+* diff two OpenAPI specs and flag breaking changes ([018f797](https://github.com/MarvinRF/docfy-ui/commit/018f7973c29d50c7001ba392d85a14c5a2eb543b))
+* multi-spec switcher, reading window.__DOCFY_SPECS__ ([74cf584](https://github.com/MarvinRF/docfy-ui/commit/74cf58456e9794be09b2228b1543f8be9f730d56))
+
 # 0.1.0 (2026-07-25)
 
 
