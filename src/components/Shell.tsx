@@ -6,9 +6,11 @@ import { Sidebar } from "./Sidebar";
 import { SearchModal } from "./SearchModal";
 import { EndpointRoute } from "./EndpointRoute";
 import { EmptyState } from "./EmptyState";
+import { ComparePage } from "./ComparePage";
 
 export interface ShellProps {
   tagGroups: TagGroup[];
+  specUrl: string;
 }
 
 /**
@@ -18,7 +20,7 @@ export interface ShellProps {
  * column. Search is a Cmd/Ctrl+K command palette (`SearchModal`), not an
  * inline filter — matches the reference design's interaction model.
  */
-export function Shell({ tagGroups }: ShellProps) {
+export function Shell({ tagGroups, specUrl }: ShellProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
 
@@ -73,6 +75,7 @@ export function Shell({ tagGroups }: ShellProps) {
               path="/:tag/:operationId"
               element={<EndpointRoute tagGroups={tagGroups} />}
             />
+            <Route path="/compare" element={<ComparePage currentSpecUrl={specUrl} />} />
             <Route path="*" element={<EmptyState />} />
           </Routes>
         </main>

@@ -30,7 +30,7 @@ const TAG_GROUPS: TagGroup[] = [
 function renderShell(initialPath = '/') {
   return render(
     <MemoryRouter initialEntries={[initialPath]}>
-      <Shell tagGroups={TAG_GROUPS} />
+      <Shell tagGroups={TAG_GROUPS} specUrl="/api-json" />
     </MemoryRouter>,
   );
 }

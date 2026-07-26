@@ -60,7 +60,7 @@ describe('<Sidebar />', () => {
     expect(screen.getByText('POST')).toBeInTheDocument();
     expect(screen.getByText('Create a user')).toBeInTheDocument();
 
-    const link = screen.getByRole('link');
+    const link = screen.getByRole('link', { name: /Create a user/i });
     const label = within(link).getByText('Create a user');
     const badge = within(link).getByText('POST');
     // Title comes first in the DOM (left), method badge second (right) — matches the reference layout.
@@ -87,7 +87,7 @@ describe('<Sidebar />', () => {
 
   it('links to /:tag/:operationId for each endpoint', () => {
     renderSidebar([{ name: 'users', description: undefined, endpoints: [makeEndpoint({ operationId: 'findAllUsers' })] }]);
-    const link = screen.getByRole('link');
+    const link = screen.getByRole('link', { name: /findAllUsers/i });
     expect(link).toHaveAttribute('href', '/users/findAllUsers');
   });
 
@@ -143,5 +143,11 @@ describe('<Sidebar />', () => {
     expect(activeLink.querySelector('[aria-hidden="true"]')).not.toBeNull();
     expect(inactiveLink.className).not.toContain('bg-primary/10');
     expect(inactiveLink.querySelector('[aria-hidden="true"]')).toBeNull();
+  });
+
+  it('links to /compare for the "Compare specs" entry', () => {
+    renderSidebar([]);
+    const link = screen.getByRole('link', { name: /Compare specs/i });
+    expect(link).toHaveAttribute('href', '/compare');
   });
 });

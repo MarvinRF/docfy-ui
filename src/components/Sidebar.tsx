@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { ChevronDown, Moon, Search, Sun, X } from "lucide-react";
+import { ChevronDown, GitCompare, Moon, Search, Sun, X } from "lucide-react";
 import type { TagGroup } from "../document-model/types";
 import { useThemeStore } from "../state/theme-store";
 import { MethodBadge } from "./MethodBadge";
@@ -197,6 +197,22 @@ export function Sidebar({
             );
           })}
         </nav>
+
+        <div className="border-t border-border px-2 py-2">
+          <Link
+            to="/compare"
+            onClick={onCloseMobile}
+            className={cn(
+              "flex items-center gap-2 rounded-md px-2 py-1.5 text-[12.5px] transition-colors",
+              location.pathname === "/compare"
+                ? "bg-primary/10 font-semibold text-foreground"
+                : "text-muted-foreground hover:bg-muted hover:text-foreground",
+            )}
+          >
+            <GitCompare className="size-3.5" />
+            Compare specs
+          </Link>
+        </div>
 
         <div className="border-t border-border px-4 py-3 text-[11px] text-muted-foreground">
           <span className="font-mono">$</span> built for Nest Docfy

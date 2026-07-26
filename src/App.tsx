@@ -33,7 +33,7 @@ export function App() {
 
   return (
     <BrowserRouter basename={getBasename()}>
-      <Shell tagGroups={spec.data.tagGroups} />
+      <Shell tagGroups={spec.data.tagGroups} specUrl={specUrl} />
     </BrowserRouter>
   );
 }
