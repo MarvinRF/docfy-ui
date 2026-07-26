@@ -5,6 +5,7 @@ import type { TagGroup } from "../document-model/types";
 import { useThemeStore } from "../state/theme-store";
 import { MethodBadge } from "./MethodBadge";
 import { NestLogo } from "./NestLogo";
+import { SpecSwitcher } from "./SpecSwitcher";
 import { cn } from "../lib/utils";
 
 export interface SidebarProps {
@@ -92,6 +93,8 @@ export function Sidebar({
             <X className="size-4" />
           </button>
         </div>
+
+        <SpecSwitcher />
 
         <div className="flex items-center gap-2 px-4 pb-3">
           <button
