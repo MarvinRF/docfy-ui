@@ -36,6 +36,7 @@
   },
   "dependencies": {
     "@apidevtools/swagger-parser": "^12.1.0",
+    "docfy-core": "file:../docfy-core",
     "@radix-ui/react-dialog": "^1.1.17",
     "@radix-ui/react-scroll-area": "^1.2.12",
     "@radix-ui/react-separator": "^1.1.10",
