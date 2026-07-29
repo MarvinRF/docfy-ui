@@ -1,3 +1,10 @@
+# [0.3.0](https://github.com/MarvinRF/docfy-ui/compare/v0.2.1...v0.3.0) (2026-07-29)
+
+
+### Features
+
+* add "Copy MCP Reference" button to endpoint detail ([9478083](https://github.com/MarvinRF/docfy-ui/commit/9478083ecc20d85f9c9cef0ceb590621324da20d))
+
 ## [0.2.1](https://github.com/MarvinRF/docfy-ui/compare/v0.2.0...v0.2.1) (2026-07-29)
 
 
