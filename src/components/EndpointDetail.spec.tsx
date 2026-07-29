@@ -23,6 +23,7 @@ function makeEndpoint(overrides: Partial<Endpoint> = {}): Endpoint {
       { status: '201', description: 'Created', contentType: 'application/json', schema: { type: 'object', properties: { id: { type: 'string' } } } },
       { status: '400', description: 'Validation Error', contentType: undefined, schema: undefined },
     ],
+    security: [],
     ...overrides,
   };
 }

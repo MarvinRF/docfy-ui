@@ -17,6 +17,7 @@ function makeEndpoint(overrides: Partial<Endpoint> = {}): Endpoint {
     parameters: [],
     requestBody: undefined,
     responses: [],
+    security: [],
     ...overrides,
   };
 }

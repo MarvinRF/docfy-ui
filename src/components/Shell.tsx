@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Routes, Route } from "react-router-dom";
 import { Menu } from "lucide-react";
-import type { TagGroup } from "../document-model/types";
+import type { SecuritySchemeInfo, TagGroup } from "../document-model/types";
 import { Sidebar } from "./Sidebar";
 import { SearchModal } from "./SearchModal";
 import { EndpointRoute } from "./EndpointRoute";
@@ -11,6 +11,8 @@ import { ComparePage } from "./ComparePage";
 export interface ShellProps {
   tagGroups: TagGroup[];
   specUrl: string;
+  securitySchemes?: Record<string, SecuritySchemeInfo>;
+  servers?: string[];
 }
 
 /**
@@ -20,7 +22,7 @@ export interface ShellProps {
  * column. Search is a Cmd/Ctrl+K command palette (`SearchModal`), not an
  * inline filter — matches the reference design's interaction model.
  */
-export function Shell({ tagGroups, specUrl }: ShellProps) {
+export function Shell({ tagGroups, specUrl, securitySchemes = {}, servers = [] }: ShellProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
 
@@ -73,7 +75,7 @@ export function Shell({ tagGroups, specUrl }: ShellProps) {
           <Routes>
             <Route
               path="/:tag/:operationId"
-              element={<EndpointRoute tagGroups={tagGroups} />}
+              element={<EndpointRoute tagGroups={tagGroups} securitySchemes={securitySchemes} servers={servers} />}
             />
             <Route path="/compare" element={<ComparePage currentSpecUrl={specUrl} />} />
             <Route path="*" element={<EmptyState />} />

@@ -27,7 +27,12 @@ export function App() {
 
   return (
     <BrowserRouter basename={getBasename()}>
-      <Shell tagGroups={spec.data.tagGroups} specUrl={specUrl} />
+      <Shell
+        tagGroups={spec.data.tagGroups}
+        specUrl={specUrl}
+        securitySchemes={spec.data.securitySchemes}
+        servers={spec.data.servers}
+      />
     </BrowserRouter>
   );
 }

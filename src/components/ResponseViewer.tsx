@@ -1,11 +1,60 @@
-import { useState } from 'react';
-import type { ResponseInfo } from '../document-model/types';
+import { useEffect, useState } from 'react';
+import type { ResponseInfo, SecuritySchemeInfo } from '../document-model/types';
 import { buildSchemaExample, pickPrimarySuccessResponse } from '../document-model/example';
+import { useTryItRequestState, useTryItStore } from '../state/try-it-store';
+import { findBearerSchemeName, findLikelyToken } from '../transformers/extract-token';
 import { CodeBlock } from './CodeBlock';
 import { cn } from '../lib/utils';
 
 export interface ResponseViewerProps {
   responses: ResponseInfo[];
+  /** `${method} ${path}` for the current endpoint — when given and a live result exists
+   * in try-it-store, a "Live" tab appears alongside the declared status tabs. */
+  endpointKey?: string;
+  /** All security schemes declared by the document — when given, a successful Live response
+   * containing a token-shaped field offers a one-click "Use as ... token" button. */
+  securitySchemes?: Record<string, SecuritySchemeInfo>;
+}
+
+const LIVE_TAB = 'live';
+
+/** Pretty-prints a live response body when it's valid JSON; returns it unchanged otherwise
+ * (e.g. plain text, HTML, or already-empty bodies) rather than showing raw compact JSON. */
+function formatResponseBody(bodyText: string): string {
+  try {
+    return JSON.stringify(JSON.parse(bodyText), null, 2);
+  } catch {
+    return bodyText;
+  }
+}
+
+interface UseTokenButtonProps {
+  schemeName: string;
+  token: string;
+}
+
+/** One-click "log in, then use the returned token" — sets the token in try-it-store under the
+ * matched scheme name, same place `AuthPanel` reads/writes it. */
+function UseTokenButton({ schemeName, token }: UseTokenButtonProps) {
+  const setAuthValue = useTryItStore((s) => s.setAuthValue);
+  const [used, setUsed] = useState(false);
+
+  return (
+    <button
+      type="button"
+      onClick={() => {
+        setAuthValue(schemeName, token);
+        setUsed(true);
+        setTimeout(() => setUsed(false), 1500);
+      }}
+      className={cn(
+        'rounded-md px-2 py-1 text-[11px] font-medium transition-colors',
+        used ? 'bg-primary text-primary-foreground' : 'bg-primary/12 text-primary hover:bg-primary/20',
+      )}
+    >
+      {used ? 'Used!' : `Use as ${schemeName} token`}
+    </button>
+  );
 }
 
 function statusClasses(status: string): string {
@@ -21,9 +70,60 @@ function statusClasses(status: string): string {
  * status range when selected), single `CodeBlock` body below. Defaults to
  * the primary success status, same as before this took the full list.
  */
-export function ResponseViewer({ responses }: ResponseViewerProps) {
+export function ResponseViewer({ responses, endpointKey, securitySchemes = {} }: ResponseViewerProps) {
+  const liveResult = useTryItRequestState(endpointKey ?? '').result;
   const defaultStatus = pickPrimarySuccessResponse(responses)?.status ?? responses[0]?.status;
-  const [status, setStatus] = useState<string | undefined>(defaultStatus);
+  const [status, setStatus] = useState<string>(defaultStatus ?? LIVE_TAB);
+
+  // Jump to the "Live" tab whenever a fresh result comes back from Try it out.
+  useEffect(() => {
+    if (liveResult) setStatus(LIVE_TAB);
+  }, [liveResult]);
+
+  if (status === LIVE_TAB && liveResult) {
+    const liveCode =
+      liveResult.kind === 'success'
+        ? liveResult.bodyText
+          ? formatResponseBody(liveResult.bodyText)
+          : `// ${liveResult.status} ${liveResult.statusText} — No Content`
+        : `// ${liveResult.message}`;
+    const liveStatusLabel = liveResult.kind === 'success' ? String(liveResult.status) : 'Error';
+    const liveStatusClass =
+      liveResult.kind === 'success' ? statusClasses(String(liveResult.status)) : 'bg-destructive/15 text-destructive';
+
+    const token = liveResult.kind === 'success' && liveResult.bodyText ? findLikelyToken(liveResult.bodyText) : undefined;
+    const tokenSchemeName = token ? findBearerSchemeName(securitySchemes) : undefined;
+
+    return (
+      <div className="min-w-0 overflow-hidden rounded-2xl border border-border bg-surface shadow-warm">
+        <div className="flex items-center gap-1 border-b border-border bg-surface-sunken px-2 py-1.5">
+          <span className="px-2 text-[10.5px] font-semibold uppercase tracking-wider text-muted-foreground">Response</span>
+          <div className="ml-auto flex items-center gap-1">
+            <button type="button" onClick={() => setStatus(LIVE_TAB)} className={cn('rounded-md px-2 py-1 font-mono text-[11px] transition-colors', liveStatusClass)}>
+              Live · {liveStatusLabel}
+            </button>
+            {responses.map((r) => (
+              <button
+                key={r.status}
+                type="button"
+                onClick={() => setStatus(r.status)}
+                className="rounded-md px-2 py-1 font-mono text-[11px] text-muted-foreground transition-colors hover:bg-muted"
+              >
+                {r.status}
+              </button>
+            ))}
+          </div>
+        </div>
+        <div key="live" className="animate-fade-in-up">
+          <div className="flex items-center justify-between px-4 pt-2">
+            {liveResult.kind === 'success' && <p className="text-[11px] text-muted-foreground">{liveResult.durationMs.toFixed(0)}ms</p>}
+            {token && tokenSchemeName && <UseTokenButton schemeName={tokenSchemeName} token={token} />}
+          </div>
+          <CodeBlock code={liveCode} language="json" variant="inline" showCopy className="rounded-none ring-0" />
+        </div>
+      </div>
+    );
+  }
 
   const active = responses.find((r) => r.status === status) ?? responses[0];
 
@@ -43,6 +143,11 @@ export function ResponseViewer({ responses }: ResponseViewerProps) {
       <div className="flex items-center gap-1 border-b border-border bg-surface-sunken px-2 py-1.5">
         <span className="px-2 text-[10.5px] font-semibold uppercase tracking-wider text-muted-foreground">Response</span>
         <div className="ml-auto flex items-center gap-1">
+          {liveResult && (
+            <button type="button" onClick={() => setStatus(LIVE_TAB)} className="rounded-md px-2 py-1 font-mono text-[11px] text-muted-foreground transition-colors hover:bg-muted">
+              Live
+            </button>
+          )}
           {responses.map((r) => (
             <button
               key={r.status}

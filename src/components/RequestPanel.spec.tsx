@@ -16,6 +16,7 @@ function makeEndpoint(overrides: Partial<Endpoint> = {}): Endpoint {
     parameters: [],
     requestBody: undefined,
     responses: [],
+    security: [],
     ...overrides,
   };
 }
@@ -41,9 +42,20 @@ describe('<RequestPanel />', () => {
     expect(container.querySelector('code')?.textContent).toMatch(/import requests/);
   });
 
-  it('renders the Test Request button as disabled', () => {
+  it('switches to the Try it out form and sends an enabled request', async () => {
+    const user = userEvent.setup();
+    const fetchMock = vi.fn().mockResolvedValue(new Response('{"ok":true}', { status: 200 }));
+    vi.stubGlobal('fetch', fetchMock);
+
     render(<RequestPanel endpoint={makeEndpoint()} baseUrl="https://api.example.com" />);
-    expect(screen.getByRole('button', { name: 'Test Request' })).toBeDisabled();
+    await user.click(screen.getByRole('tab', { name: 'Try it out' }));
+
+    const sendButton = screen.getByRole('button', { name: 'Send' });
+    expect(sendButton).toBeEnabled();
+    await user.click(sendButton);
+
+    expect(fetchMock).toHaveBeenCalledWith('https://api.example.com/users', expect.objectContaining({ method: 'GET' }));
+    vi.unstubAllGlobals();
   });
 
   it('renders a copy button for the current snippet', async () => {

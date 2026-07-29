@@ -1,6 +1,7 @@
-import type { Endpoint } from "../document-model/types";
+import type { Endpoint, SecuritySchemeInfo } from "../document-model/types";
 import { capDepth } from "../document-model/cap-depth";
 import { operationToAiText } from "../transformers/copy-for-ai";
+import { endpointKeyFor } from "../state/try-it-store";
 import { OperationHeader } from "./OperationHeader";
 import { ParametersSection } from "./ParametersSection";
 import { RequestBodySection } from "./RequestBodySection";
@@ -12,6 +13,8 @@ import { CopyButton } from "./CopyButton";
 export interface EndpointDetailProps {
   endpoint: Endpoint;
   baseUrl: string;
+  securitySchemes?: Record<string, SecuritySchemeInfo>;
+  servers?: string[];
 }
 
 /**
@@ -21,9 +24,10 @@ export interface EndpointDetailProps {
  * under the doc body in its own width-capped block with a "Code
  * examples" heading, same as the reference.
  */
-export function EndpointDetail({ endpoint, baseUrl }: EndpointDetailProps) {
+export function EndpointDetail({ endpoint, baseUrl, securitySchemes = {}, servers = [] }: EndpointDetailProps) {
   const openApiJson = JSON.stringify(capDepth(endpoint), null, 2);
   const aiText = operationToAiText(endpoint);
+  const endpointKey = endpointKeyFor(endpoint);
   // `window.location.href` is exactly this endpoint's canonical URL — this
   // component only ever renders from EndpointRoute, which already resolved
   // the current route to this exact endpoint, basename (window.__DOCFY_BASE_PATH__)
@@ -58,8 +62,8 @@ export function EndpointDetail({ endpoint, baseUrl }: EndpointDetailProps) {
 
         <aside className="hidden w-[500px] shrink-0 xl:block">
           <div className="sticky top-8 flex flex-col gap-4">
-            <RequestPanel endpoint={endpoint} baseUrl={baseUrl} />
-            <ResponseViewer responses={endpoint.responses} />
+            <RequestPanel endpoint={endpoint} baseUrl={baseUrl} securitySchemes={securitySchemes} servers={servers} />
+            <ResponseViewer responses={endpoint.responses} endpointKey={endpointKey} securitySchemes={securitySchemes} />
           </div>
         </aside>
       </article>
@@ -70,8 +74,8 @@ export function EndpointDetail({ endpoint, baseUrl }: EndpointDetailProps) {
           Code examples
         </h3>
         <div className="flex flex-col gap-4">
-          <RequestPanel endpoint={endpoint} baseUrl={baseUrl} />
-          <ResponseViewer responses={endpoint.responses} />
+          <RequestPanel endpoint={endpoint} baseUrl={baseUrl} securitySchemes={securitySchemes} servers={servers} />
+          <ResponseViewer responses={endpoint.responses} endpointKey={endpointKey} securitySchemes={securitySchemes} />
         </div>
       </div>
     </>
