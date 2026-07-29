@@ -1,3 +1,11 @@
+## [0.2.1](https://github.com/MarvinRF/docfy-ui/compare/v0.2.0...v0.2.1) (2026-07-29)
+
+
+### Bug Fixes
+
+* depend on docfy-core from npm instead of a file: sibling path ([0a56207](https://github.com/MarvinRF/docfy-ui/commit/0a56207b776f59c07a9963a27b3c845ae3fa6d7c))
+* move docfy-core to devDependencies ([bba4fd7](https://github.com/MarvinRF/docfy-ui/commit/bba4fd794073c5efc8c4f603bfa1d2aa2e7df74b))
+
 # [0.2.0](https://github.com/MarvinRF/docfy-ui/compare/v0.1.0...v0.2.0) (2026-07-26)
 
 
