@@ -1,3 +1,10 @@
+# [0.4.0](https://github.com/MarvinRF/docfy-ui/compare/v0.3.0...v0.4.0) (2026-07-29)
+
+
+### Features
+
+* add "Try it out" request execution with a same-origin auth-aware client ([a98789d](https://github.com/MarvinRF/docfy-ui/commit/a98789d1a1bba0947429510dee7373365b303e5a))
+
 # [0.3.0](https://github.com/MarvinRF/docfy-ui/compare/v0.2.1...v0.3.0) (2026-07-29)
 
 
