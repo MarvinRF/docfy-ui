@@ -28,11 +28,12 @@ function makeEndpoint(overrides: Partial<Endpoint> = {}): Endpoint {
 }
 
 describe('<EndpointDetail />', () => {
-  it('renders the operation title and both action buttons', () => {
+  it('renders the operation title and all three action buttons', () => {
     render(<EndpointDetail endpoint={makeEndpoint()} baseUrl="https://api.example.com" />);
     expect(screen.getByRole('heading', { name: 'Register a new account' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Copy OpenAPI' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Copy as a Prompt' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Copy MCP Reference' })).toBeInTheDocument();
   });
 
   it('renders the request panel with the right method/path', () => {
@@ -88,6 +89,18 @@ describe('<EndpointDetail />', () => {
 
     expect(copiedText).toContain('Endpoint: POST /auth/register');
     expect(copiedText).toContain('Success Response (201):');
+  });
+
+  it('"Copy MCP Reference" copies method+path and the current page URL', async () => {
+    const user = userEvent.setup();
+    let copiedText = '';
+    const writeText = (text: string) => { copiedText = text; return Promise.resolve(); };
+    Object.defineProperty(navigator, 'clipboard', { value: { writeText }, configurable: true });
+
+    render(<EndpointDetail endpoint={makeEndpoint()} baseUrl="https://api.example.com" />);
+    await user.click(screen.getByRole('button', { name: 'Copy MCP Reference' }));
+
+    expect(copiedText).toBe(`POST /auth/register\n${window.location.href}`);
   });
 
   it('handles a circular schema (recursive DTO) without crashing', async () => {

@@ -24,6 +24,12 @@ export interface EndpointDetailProps {
 export function EndpointDetail({ endpoint, baseUrl }: EndpointDetailProps) {
   const openApiJson = JSON.stringify(capDepth(endpoint), null, 2);
   const aiText = operationToAiText(endpoint);
+  // `window.location.href` is exactly this endpoint's canonical URL — this
+  // component only ever renders from EndpointRoute, which already resolved
+  // the current route to this exact endpoint, basename (window.__DOCFY_BASE_PATH__)
+  // included. Reconstructing it from tag/operationId here would duplicate
+  // that logic and risk drifting out of sync with it.
+  const mcpReference = `${endpoint.method} ${endpoint.path}\n${typeof window !== "undefined" ? window.location.href : baseUrl}`;
 
   return (
     <>
@@ -36,6 +42,7 @@ export function EndpointDetail({ endpoint, baseUrl }: EndpointDetailProps) {
           <div className="mb-4 flex flex-wrap gap-2">
             <CopyButton text={openApiJson} label="Copy OpenAPI" />
             <CopyButton text={aiText} label="Copy as a Prompt" />
+            <CopyButton text={mcpReference} label="Copy MCP Reference" />
           </div>
 
           <OperationHeader endpoint={endpoint} />

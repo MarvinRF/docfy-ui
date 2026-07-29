@@ -1,4 +1,4 @@
-import { Check, Copy, Sparkles } from "lucide-react";
+import { Check, Copy, Link2, Sparkles } from "lucide-react";
 import { useCopyToClipboard } from "../hooks/use-copy-to-clipboard";
 import { cn } from "../lib/utils";
 
@@ -7,11 +7,16 @@ export interface CopyButtonProps {
   label: string;
 }
 
+const LABEL_ICONS: Record<string, typeof Copy> = {
+  "Copy as a Prompt": Sparkles,
+  "Copy MCP Reference": Link2,
+};
+
 /** Generic copy button — label swaps to "Copied!" for ~1.5s after a successful copy. */
 export function CopyButton({ text, label }: CopyButtonProps) {
   const { copied, copy } = useCopyToClipboard();
 
-  const Icon = copied ? Check : label === "Copy as a Prompt" ? Sparkles : Copy;
+  const Icon = copied ? Check : (LABEL_ICONS[label] ?? Copy);
 
   return (
     <button
