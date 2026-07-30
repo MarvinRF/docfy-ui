@@ -1,11 +1,21 @@
 {
   "name": "docfy-ui",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "type": "module",
   "description": "AI-first OpenAPI documentation UI — companion project to nestjs-docfy",
   "files": [
     "dist"
   ],
+  "author": "Marvin Rocha",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/MarvinRF/docfy-ui.git"
+  },
+  "homepage": "https://github.com/MarvinRF/docfy-ui#readme",
+  "bugs": {
+    "url": "https://github.com/MarvinRF/docfy-ui/issues"
+  },
   "scripts": {
     "dev": "vite",
     "build": "tsc --noEmit && vite build",

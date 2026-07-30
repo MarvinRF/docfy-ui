@@ -23,6 +23,7 @@ AI-first OpenAPI documentation UI, a companion project to [nestjs-docfy](https:/
   - [Pointing at a remote spec](#pointing-at-a-remote-spec)
 - [Configuration](#configuration)
 - [Copy for AI](#copy-for-ai)
+- [Try it out](#try-it-out)
 - [Document Model](#document-model)
 - [Theming](#theming)
 - [Architecture notes](#architecture-notes)
@@ -82,7 +83,11 @@ POST /users
 
 - **Copy for AI**: every endpoint gets a one-click, LLM-ready plain-text summary (purpose, request, responses, validation rules) instead of raw JSON.
 - **Copy OpenAPI**: copies the dereferenced, cycle-safe JSON fragment for just the selected endpoint.
-- **Two-column endpoint view**: documentation on the left (parameters, responses, navigable schema tree), code snippets (curl, JavaScript, Python, Go) on the right.
+- **Copy MCP Reference**: copies the endpoint's method/path plus the current page URL, so an agent with access to the live app (or an MCP server pointed at it) can look the operation up directly instead of you pasting the whole spec.
+- **Try it out**: execute a real request against the API from the browser, with auth support (apiKey/bearer/basic/OAuth2 token) and a "Live" response tab — see [Try it out](#try-it-out).
+- **Compare specs**: diff two OpenAPI documents and flag breaking vs. informational changes (new/removed endpoints, newly-required params, removed response codes).
+- **Multi-spec switcher**: browse more than one service's documentation from a single deployed instance, without leaving the UI.
+- **Two-column endpoint view**: documentation on the left (parameters, responses, navigable schema tree), code snippets (curl, JavaScript fetch, Axios, Python, PHP) on the right.
 - **Real-time search**: filters the sidebar by path/summary/operationId on every keystroke, no debounce, no Enter key.
 - **Dark/light theme**: token-driven, switches instantly with no page reload and no flash on first paint.
 - **Zero backend coupling**: fetches a plain OpenAPI 3.0/3.1 JSON document client-side; works with any server that exposes one, not just NestJS.
@@ -143,6 +148,8 @@ The UI has no build-time configuration. It resolves the spec to render entirely 
 
 If the UI is deployed on a different origin than the API, use the `?spec=` override and make sure the API's CORS configuration allows that origin to `GET` the JSON document.
 
+This same origin question comes up again for [Try it out](#try-it-out)'s request execution — see that section for how the same-origin proxy sidesteps it without touching the API's own CORS config.
+
 ## Copy for AI
 
 `operationToAiText(endpoint)` (`src/transformers/copy-for-ai.ts`) is a pure function (no I/O, no React) that turns a normalized endpoint into the plain-text block behind the "Copy for AI" button, structured as: Purpose → Request → Responses → Error Responses → Validation. Edge cases are handled explicitly rather than guessed at:
@@ -154,6 +161,17 @@ If the UI is deployed on a different origin than the API, use the `?spec=` overr
 - A long description with no `summary` → truncated to two sentences for Purpose.
 
 Generation is consistently well under 100ms (no spinner is ever shown) and recursive/circular DTOs are handled safely. See [Document Model](#document-model).
+
+## Try it out
+
+Every endpoint's request panel has a **Code / Try it out** mode switch, next to the language tabs. "Code" is the snippet view described above; "Try it out" is an editable form (base URL, path/query/header params, request body) that executes a real request via `executeRequest()` (`src/transformers/execute-request.ts`) and shows the result in a "Live" tab alongside the declared example responses — pretty-printed when the body is JSON, with a friendly message instead of a raw error on a network/CORS failure.
+
+- **Base URL**: defaults to the first entry in the OpenAPI document's `servers[]` array when present, falling back to the page's own origin otherwise. Always freely editable.
+- **Authentication**: endpoints with a `security` requirement get an inline auth form (`AuthPanel`) — one input per declared scheme. `apiKey` goes to a header or query param per its `in`; `http bearer`/`oauth2`/`openIdConnect` all accept a token you paste in directly (no OAuth dance is performed); `http basic` expects `user:pass`. Credentials are global (shared across every endpoint using that scheme, like a real dev token) and persist to `localStorage` so they survive a reload.
+- **"Use as … token"**: when a successful Live response contains a token-shaped field (e.g. a login endpoint's `access_token`, including nested under an envelope like `data.access_token`), a button lets you reuse it as the Bearer credential for the rest of the session with one click — no manual copy/paste.
+- **CORS**: by default this is a direct `fetch()` from the browser to the target, so it's subject to the target API's own CORS policy — same constraint as [Configuration](#configuration) above. When `nestjs-docfy`'s `DocfyUiModule.setup()` is configured with `openApiDocument` (see [its README](https://github.com/MarvinRF/nest-docfy#docfyuimodulesetupmountpath-app-options)), `docfy-ui` detects the injected `window.__DOCFY_PROXY_PATH__` and routes the request through a same-origin server-side proxy instead, sidestepping CORS entirely for whatever origins the OpenAPI document declares in `servers[]`.
+
+Out of scope, deliberately: request history, multiple named environments, a full OAuth2 authorization-code/PKCE flow, and cookie-based auth (can't be set reliably cross-site from the browser).
 
 ## Document Model
 
