@@ -157,6 +157,106 @@ describe('<ResponseViewer />', () => {
     });
   });
 
+  describe('schema match badge (Live tab)', () => {
+    it('shows a green badge when the live body matches the declared schema', () => {
+      useTryItStore.getState().setResult('GET /items', {
+        kind: 'success',
+        status: 200,
+        statusText: 'OK',
+        headers: [],
+        bodyText: '{"id":"1"}',
+        durationMs: 5,
+      });
+
+      render(
+        <ResponseViewer
+          responses={[
+            {
+              status: '200',
+              description: 'OK',
+              contentType: 'application/json',
+              schema: { type: 'object', required: ['id'], properties: { id: { type: 'string' } } },
+            },
+          ]}
+          endpointKey="GET /items"
+        />,
+      );
+
+      expect(screen.getByText(/Matches schema/)).toBeInTheDocument();
+    });
+
+    it('shows a red badge listing what diverged when the live body violates the schema', () => {
+      useTryItStore.getState().setResult('GET /items', {
+        kind: 'success',
+        status: 200,
+        statusText: 'OK',
+        headers: [],
+        bodyText: '{"id":42}',
+        durationMs: 5,
+      });
+
+      render(
+        <ResponseViewer
+          responses={[
+            {
+              status: '200',
+              description: 'OK',
+              contentType: 'application/json',
+              schema: { type: 'object', required: ['id'], properties: { id: { type: 'string' } } },
+            },
+          ]}
+          endpointKey="GET /items"
+        />,
+      );
+
+      expect(screen.getByText(/1 schema mismatch/)).toBeInTheDocument();
+    });
+
+    it('shows no badge when the status has no declared schema to check against', () => {
+      useTryItStore.getState().setResult('GET /items', {
+        kind: 'success',
+        status: 200,
+        statusText: 'OK',
+        headers: [],
+        bodyText: '{"id":"1"}',
+        durationMs: 5,
+      });
+
+      render(
+        <ResponseViewer
+          responses={[{ status: '200', description: 'OK', contentType: 'application/json', schema: undefined }]}
+          endpointKey="GET /items"
+        />,
+      );
+
+      expect(screen.queryByText(/Matches schema/)).not.toBeInTheDocument();
+      expect(screen.queryByText(/schema mismatch/)).not.toBeInTheDocument();
+    });
+
+    it('shows no badge (does not crash) when the live body is not valid JSON', () => {
+      useTryItStore.getState().setResult('GET /items', {
+        kind: 'success',
+        status: 200,
+        statusText: 'OK',
+        headers: [],
+        bodyText: 'not json',
+        durationMs: 5,
+      });
+
+      render(
+        <ResponseViewer
+          responses={[
+            { status: '200', description: 'OK', contentType: 'text/plain', schema: { type: 'string' } },
+          ]}
+          endpointKey="GET /items"
+        />,
+      );
+
+      expect(screen.queryByText(/Matches schema/)).not.toBeInTheDocument();
+      expect(screen.queryByText(/schema mismatch/)).not.toBeInTheDocument();
+    });
+  });
+
   it('shows a fallback message when there are no responses', () => {
     render(<ResponseViewer responses={[]} />);
     expect(screen.getByText(/no responses declared/i)).toBeInTheDocument();

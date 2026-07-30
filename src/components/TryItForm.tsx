@@ -1,8 +1,10 @@
 import type { Endpoint, SecuritySchemeInfo } from '../document-model/types';
 import { buildSchemaExample } from '../document-model/example';
 import { executeRequest } from '../transformers/execute-request';
+import { buildCurlCommand } from '../transformers/build-curl';
 import { endpointKeyFor, useTryItRequestState, useTryItStore } from '../state/try-it-store';
 import { AuthPanel } from './AuthPanel';
+import { CopyButton } from './CopyButton';
 
 export interface TryItFormProps {
   endpoint: Endpoint;
@@ -35,6 +37,16 @@ export function TryItForm({ endpoint, baseUrl, securitySchemes, servers = [] }: 
 
   const bodyExample = endpoint.requestBody ? buildSchemaExample(endpoint.requestBody.schema)?.json : undefined;
   const effectiveBodyText = bodyText ?? bodyExample ?? '';
+
+  // Same inputs `handleSend()` is about to fetch with — this curl is guaranteed to reproduce
+  // the actual request, not a generic placeholder example (see the static "Code" tab for that).
+  const curlCommand = buildCurlCommand(endpoint, {
+    baseUrl: baseUrlOverride ?? defaultBaseUrl,
+    paramValues,
+    bodyText: effectiveBodyText,
+    authValues,
+    securitySchemes,
+  });
 
   async function handleSend() {
     setLoading(endpointKey, true);
@@ -96,14 +108,17 @@ export function TryItForm({ endpoint, baseUrl, securitySchemes, servers = [] }: 
 
       <AuthPanel security={endpoint.security} securitySchemes={securitySchemes} />
 
-      <button
-        type="button"
-        onClick={handleSend}
-        disabled={loading}
-        className="self-start rounded-md bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground shadow-glow disabled:cursor-wait disabled:opacity-60"
-      >
-        {loading ? 'Sending…' : 'Send'}
-      </button>
+      <div className="flex items-center gap-2">
+        <button
+          type="button"
+          onClick={handleSend}
+          disabled={loading}
+          className="self-start rounded-md bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground shadow-glow disabled:cursor-wait disabled:opacity-60"
+        >
+          {loading ? 'Sending…' : 'Send'}
+        </button>
+        <CopyButton text={curlCommand} label="Copy as curl" />
+      </div>
     </div>
   );
 }

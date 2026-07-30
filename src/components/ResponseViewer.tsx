@@ -1,6 +1,7 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import type { ResponseInfo, SecuritySchemeInfo } from '../document-model/types';
-import { buildSchemaExample, pickPrimarySuccessResponse } from '../document-model/example';
+import { buildSchemaExample, pickPrimarySuccessResponse, validateAgainstSchema } from '../document-model/example';
+import type { SchemaMismatch } from '../document-model/example';
 import { useTryItRequestState, useTryItStore } from '../state/try-it-store';
 import { findBearerSchemeName, findLikelyToken } from '../transformers/extract-token';
 import { CodeBlock } from './CodeBlock';
@@ -57,6 +58,31 @@ function UseTokenButton({ schemeName, token }: UseTokenButtonProps) {
   );
 }
 
+interface SchemaMatchBadgeProps {
+  mismatches: SchemaMismatch[];
+}
+
+/** Shown only when there was something to check (a declared schema + a parsed JSON body) —
+ * green "matches schema" or red "N mismatches" with each offending path/reason on hover. */
+function SchemaMatchBadge({ mismatches }: SchemaMatchBadgeProps) {
+  if (mismatches.length === 0) {
+    return (
+      <span className="rounded-md bg-success/15 px-2 py-1 text-[11px] font-medium text-success">
+        ✓ Matches schema
+      </span>
+    );
+  }
+  const title = mismatches.map((m) => `${m.path}: ${m.message}`).join('\n');
+  return (
+    <span
+      title={title}
+      className="rounded-md bg-destructive/15 px-2 py-1 text-[11px] font-medium text-destructive"
+    >
+      ⚠ {mismatches.length} schema mismatch{mismatches.length === 1 ? '' : 'es'}
+    </span>
+  );
+}
+
 function statusClasses(status: string): string {
   if (status.startsWith('2')) return 'bg-success/15 text-success';
   if (status.startsWith('4')) return 'bg-warning/15 text-warning';
@@ -79,6 +105,20 @@ export function ResponseViewer({ responses, endpointKey, securitySchemes = {} }:
   useEffect(() => {
     if (liveResult) setStatus(LIVE_TAB);
   }, [liveResult]);
+
+  // Structural drift check: does the live body actually match the schema this status
+  // code promises? `undefined` means "nothing to check" (non-JSON body, no declared
+  // schema for this status, or no live result yet) — distinct from "checked, 0 issues".
+  const schemaMismatches = useMemo((): SchemaMismatch[] | undefined => {
+    if (liveResult?.kind !== 'success' || !liveResult.bodyText) return undefined;
+    const declared = responses.find((r) => r.status === String(liveResult.status));
+    if (!declared?.schema) return undefined;
+    try {
+      return validateAgainstSchema(declared.schema, JSON.parse(liveResult.bodyText));
+    } catch {
+      return undefined;
+    }
+  }, [liveResult, responses]);
 
   if (status === LIVE_TAB && liveResult) {
     const liveCode =
@@ -126,7 +166,10 @@ export function ResponseViewer({ responses, endpointKey, securitySchemes = {} }:
             {liveResult.kind === 'success' && (
               <p className="text-[11px] text-muted-foreground">{liveResult.durationMs.toFixed(0)}ms</p>
             )}
-            {token && tokenSchemeName && <UseTokenButton schemeName={tokenSchemeName} token={token} />}
+            <div className="flex items-center gap-2">
+              {schemaMismatches && <SchemaMatchBadge mismatches={schemaMismatches} />}
+              {token && tokenSchemeName && <UseTokenButton schemeName={tokenSchemeName} token={token} />}
+            </div>
           </div>
           <CodeBlock code={liveCode} language="json" variant="inline" showCopy className="rounded-none ring-0" />
         </div>

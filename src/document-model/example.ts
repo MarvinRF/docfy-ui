@@ -4,6 +4,7 @@ export {
   circularMarker,
   pickPrimarySuccessResponse,
   resolveUnion,
+  validateAgainstSchema,
   withUnionNotes,
 } from 'docfy-core';
-export type { SchemaExampleResult } from 'docfy-core';
+export type { SchemaExampleResult, SchemaMismatch } from 'docfy-core';

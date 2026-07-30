@@ -86,4 +86,18 @@ describe('<TryItForm />', () => {
     resolveFetch(new Response('{}', { status: 200 }));
     vi.unstubAllGlobals();
   });
+
+  it('copies a curl command reproducing the actual typed param values, not placeholders', async () => {
+    // userEvent.setup() installs its own clipboard stub on navigator.clipboard —
+    // our mock must be defined AFTER setup(), or setup() clobbers it (see CopyButton.spec.tsx).
+    const user = userEvent.setup();
+    const writeText = vi.fn().mockResolvedValue(undefined);
+    Object.defineProperty(navigator, 'clipboard', { value: { writeText }, configurable: true });
+
+    render(<TryItForm endpoint={makeEndpoint()} baseUrl="https://api.example.com" securitySchemes={{}} />);
+    await user.type(screen.getByLabelText(/^id/), '42');
+    await user.click(screen.getByRole('button', { name: 'Copy as curl' }));
+
+    expect(writeText).toHaveBeenCalledWith(`curl -X GET 'https://api.example.com/items/42'`);
+  });
 });
