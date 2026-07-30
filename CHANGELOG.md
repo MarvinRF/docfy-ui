@@ -1,3 +1,10 @@
+# [0.5.0](https://github.com/MarvinRF/docfy-ui/compare/v0.4.0...v0.5.0) (2026-07-29)
+
+
+### Documentation
+
+* document "Try it out", proxy support, and current feature set (Copy MCP Reference, Compare specs, multi-spec switcher) in README; fix banner image never rendering on the npm package page (missing repository field) ([a9943db](https://github.com/MarvinRF/docfy-ui/commit/a9943dbb3b1bdde9bba9f374f36e558166ca50d6))
+
 # [0.4.0](https://github.com/MarvinRF/docfy-ui/compare/v0.3.0...v0.4.0) (2026-07-29)
 
 
