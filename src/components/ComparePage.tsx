@@ -24,10 +24,7 @@ async function fetchAndNormalize(url: string) {
 }
 
 function breakingCount(diff: SpecDiff): number {
-  const fromChanges = diff.changed.reduce(
-    (n, c) => n + c.changes.filter((ch) => ch.severity === 'breaking').length,
-    0,
-  );
+  const fromChanges = diff.changed.reduce((n, c) => n + c.changes.filter((ch) => ch.severity === 'breaking').length, 0);
   return diff.removed.length + fromChanges;
 }
 
@@ -50,9 +47,7 @@ function ChangedEndpointCard({ entry }: { entry: ChangedEndpoint }) {
       <ul className="mt-2 flex flex-col gap-1.5">
         {entry.changes.map((change, i) => (
           <li key={i} className="flex items-center gap-2 text-[12.5px] text-muted-foreground">
-            <Badge variant={change.severity === 'breaking' ? 'destructive' : 'info'}>
-              {change.severity}
-            </Badge>
+            <Badge variant={change.severity === 'breaking' ? 'destructive' : 'info'}>{change.severity}</Badge>
             {change.description}
           </li>
         ))}
@@ -132,10 +127,7 @@ export function ComparePage({ currentSpecUrl }: ComparePageProps) {
     e.preventDefault();
     setState({ status: 'loading' });
     try {
-      const [oldModel, newModel] = await Promise.all([
-        fetchAndNormalize(oldUrl),
-        fetchAndNormalize(newUrl),
-      ]);
+      const [oldModel, newModel] = await Promise.all([fetchAndNormalize(oldUrl), fetchAndNormalize(newUrl)]);
       setState({ status: 'success', diff: diffDocuments(oldModel, newModel) });
     } catch (err) {
       setState({ status: 'error', error: err instanceof Error ? err.message : String(err) });
@@ -147,8 +139,8 @@ export function ComparePage({ currentSpecUrl }: ComparePageProps) {
       <div>
         <h1 className="text-lg font-semibold text-foreground">Compare specs</h1>
         <p className="mt-1 text-sm text-muted-foreground">
-          Detects breaking changes between two OpenAPI documents — paste a URL for each (e.g. a
-          previous release's <code className="font-mono">/api-json</code> vs. the current one).
+          Detects breaking changes between two OpenAPI documents — paste a URL for each (e.g. a previous release's{' '}
+          <code className="font-mono">/api-json</code> vs. the current one).
         </p>
       </div>
 

@@ -41,10 +41,38 @@ describe('findLikelyToken()', () => {
 });
 
 describe('findBearerSchemeName()', () => {
-  const bearer: SecuritySchemeInfo = { type: 'http', scheme: 'bearer', bearerFormat: 'JWT', in: undefined, name: undefined, description: undefined };
-  const basic: SecuritySchemeInfo = { type: 'http', scheme: 'basic', bearerFormat: undefined, in: undefined, name: undefined, description: undefined };
-  const apiKey: SecuritySchemeInfo = { type: 'apiKey', in: 'header', name: 'X-API-Key', scheme: undefined, bearerFormat: undefined, description: undefined };
-  const oauth2: SecuritySchemeInfo = { type: 'oauth2', scheme: undefined, bearerFormat: undefined, in: undefined, name: undefined, description: undefined };
+  const bearer: SecuritySchemeInfo = {
+    type: 'http',
+    scheme: 'bearer',
+    bearerFormat: 'JWT',
+    in: undefined,
+    name: undefined,
+    description: undefined,
+  };
+  const basic: SecuritySchemeInfo = {
+    type: 'http',
+    scheme: 'basic',
+    bearerFormat: undefined,
+    in: undefined,
+    name: undefined,
+    description: undefined,
+  };
+  const apiKey: SecuritySchemeInfo = {
+    type: 'apiKey',
+    in: 'header',
+    name: 'X-API-Key',
+    scheme: undefined,
+    bearerFormat: undefined,
+    description: undefined,
+  };
+  const oauth2: SecuritySchemeInfo = {
+    type: 'oauth2',
+    scheme: undefined,
+    bearerFormat: undefined,
+    in: undefined,
+    name: undefined,
+    description: undefined,
+  };
 
   it('prefers an http bearer scheme', () => {
     expect(findBearerSchemeName({ apiKeyAuth: apiKey, bearerAuth: bearer, oauthAuth: oauth2 })).toBe('bearerAuth');

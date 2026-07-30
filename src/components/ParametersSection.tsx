@@ -1,17 +1,17 @@
-import type { ParameterInfo } from "../document-model/types";
-import { ParameterRow } from "./ParameterRow";
+import type { ParameterInfo } from '../document-model/types';
+import { ParameterRow } from './ParameterRow';
 
 export interface ParametersSectionProps {
   parameters: ParameterInfo[];
 }
 
 const GROUP_LABELS: Record<string, string> = {
-  path: "Path Parameters",
-  query: "Query Parameters",
-  header: "Headers",
+  path: 'Path Parameters',
+  query: 'Query Parameters',
+  header: 'Headers',
 };
 
-const GROUP_ORDER = ["path", "query", "header"];
+const GROUP_ORDER = ['path', 'query', 'header'];
 
 /** Parameters grouped into Path/Query/Header sections — cookie params are out of scope (mirrors Copy for AI). */
 export function ParametersSection({ parameters }: ParametersSectionProps) {

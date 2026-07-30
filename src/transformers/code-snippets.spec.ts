@@ -34,7 +34,9 @@ describe('buildSnippetUrl()', () => {
         { name: 'limit', in: 'query', required: false, schema: { type: 'integer' }, description: undefined },
       ],
     });
-    expect(buildSnippetUrl(endpoint, 'https://api.example.com')).toBe('https://api.example.com/users?search=string&limit=integer');
+    expect(buildSnippetUrl(endpoint, 'https://api.example.com')).toBe(
+      'https://api.example.com/users?search=string&limit=integer',
+    );
   });
 
   it('does not include path or header parameters in the query string', () => {
@@ -62,7 +64,11 @@ describe('buildCodeSnippet()', () => {
   it('generates a curl snippet with -d and Content-Type when a body is present', () => {
     const endpoint = baseEndpoint({
       method: 'POST',
-      requestBody: { required: true, contentType: 'application/json', schema: { type: 'object', properties: { name: { type: 'string' } } } },
+      requestBody: {
+        required: true,
+        contentType: 'application/json',
+        schema: { type: 'object', properties: { name: { type: 'string' } } },
+      },
     });
     const snippet = buildCodeSnippet(endpoint, 'https://api.example.com', 'curl');
     expect(snippet).toContain(`curl -X POST 'https://api.example.com/users' \\`);
@@ -74,7 +80,11 @@ describe('buildCodeSnippet()', () => {
   it('generates a fetch snippet with JSON.stringify for the body', () => {
     const endpoint = baseEndpoint({
       method: 'POST',
-      requestBody: { required: true, contentType: 'application/json', schema: { type: 'object', properties: { name: { type: 'string' } } } },
+      requestBody: {
+        required: true,
+        contentType: 'application/json',
+        schema: { type: 'object', properties: { name: { type: 'string' } } },
+      },
     });
     const snippet = buildCodeSnippet(endpoint, 'https://api.example.com', 'javascript');
     expect(snippet).toContain(`fetch('https://api.example.com/users', {`);
@@ -84,7 +94,9 @@ describe('buildCodeSnippet()', () => {
 
   it('generates an axios snippet using the lowercase HTTP method as the call', () => {
     const endpoint = baseEndpoint({ method: 'DELETE', path: '/users/1' });
-    expect(buildCodeSnippet(endpoint, 'https://api.example.com', 'axios')).toBe(`axios.delete('https://api.example.com/users/1');`);
+    expect(buildCodeSnippet(endpoint, 'https://api.example.com', 'axios')).toBe(
+      `axios.delete('https://api.example.com/users/1');`,
+    );
   });
 
   it('generates a python snippet using the requests library', () => {
@@ -97,7 +109,11 @@ describe('buildCodeSnippet()', () => {
   it('produces python dict-literal-compatible body JSON (double-quoted keys/values)', () => {
     const endpoint = baseEndpoint({
       method: 'POST',
-      requestBody: { required: true, contentType: 'application/json', schema: { type: 'object', properties: { name: { type: 'string' } } } },
+      requestBody: {
+        required: true,
+        contentType: 'application/json',
+        schema: { type: 'object', properties: { name: { type: 'string' } } },
+      },
     });
     const snippet = buildCodeSnippet(endpoint, 'https://api.example.com', 'python');
     expect(snippet).toContain(`json={`);

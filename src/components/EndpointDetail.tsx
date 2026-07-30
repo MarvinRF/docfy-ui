@@ -1,14 +1,14 @@
-import type { Endpoint, SecuritySchemeInfo } from "../document-model/types";
-import { capDepth } from "../document-model/cap-depth";
-import { operationToAiText } from "../transformers/copy-for-ai";
-import { endpointKeyFor } from "../state/try-it-store";
-import { OperationHeader } from "./OperationHeader";
-import { ParametersSection } from "./ParametersSection";
-import { RequestBodySection } from "./RequestBodySection";
-import { ResponsesSection } from "./ResponsesSection";
-import { RequestPanel } from "./RequestPanel";
-import { ResponseViewer } from "./ResponseViewer";
-import { CopyButton } from "./CopyButton";
+import type { Endpoint, SecuritySchemeInfo } from '../document-model/types';
+import { capDepth } from '../document-model/cap-depth';
+import { operationToAiText } from '../transformers/copy-for-ai';
+import { endpointKeyFor } from '../state/try-it-store';
+import { OperationHeader } from './OperationHeader';
+import { ParametersSection } from './ParametersSection';
+import { RequestBodySection } from './RequestBodySection';
+import { ResponsesSection } from './ResponsesSection';
+import { RequestPanel } from './RequestPanel';
+import { ResponseViewer } from './ResponseViewer';
+import { CopyButton } from './CopyButton';
 
 export interface EndpointDetailProps {
   endpoint: Endpoint;
@@ -33,7 +33,7 @@ export function EndpointDetail({ endpoint, baseUrl, securitySchemes = {}, server
   // the current route to this exact endpoint, basename (window.__DOCFY_BASE_PATH__)
   // included. Reconstructing it from tag/operationId here would duplicate
   // that logic and risk drifting out of sync with it.
-  const mcpReference = `${endpoint.method} ${endpoint.path}\n${typeof window !== "undefined" ? window.location.href : baseUrl}`;
+  const mcpReference = `${endpoint.method} ${endpoint.path}\n${typeof window !== 'undefined' ? window.location.href : baseUrl}`;
 
   return (
     <>
@@ -63,7 +63,11 @@ export function EndpointDetail({ endpoint, baseUrl, securitySchemes = {}, server
         <aside className="hidden w-[500px] shrink-0 xl:block">
           <div className="sticky top-8 flex flex-col gap-4">
             <RequestPanel endpoint={endpoint} baseUrl={baseUrl} securitySchemes={securitySchemes} servers={servers} />
-            <ResponseViewer responses={endpoint.responses} endpointKey={endpointKey} securitySchemes={securitySchemes} />
+            <ResponseViewer
+              responses={endpoint.responses}
+              endpointKey={endpointKey}
+              securitySchemes={securitySchemes}
+            />
           </div>
         </aside>
       </article>

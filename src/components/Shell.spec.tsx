@@ -25,7 +25,11 @@ function makeEndpoint(overrides: Partial<Endpoint> = {}): Endpoint {
 
 const TAG_GROUPS: TagGroup[] = [
   { name: 'users', description: undefined, endpoints: [makeEndpoint()] },
-  { name: 'orders', description: undefined, endpoints: [makeEndpoint({ path: '/orders', operationId: 'findAllOrders', summary: 'List orders' })] },
+  {
+    name: 'orders',
+    description: undefined,
+    endpoints: [makeEndpoint({ path: '/orders', operationId: 'findAllOrders', summary: 'List orders' })],
+  },
 ];
 
 function renderShell(initialPath = '/') {

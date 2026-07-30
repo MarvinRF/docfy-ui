@@ -119,7 +119,10 @@ describe('schemaToTreeNodes()', () => {
         data: {
           type: 'object',
           properties: {
-            customers: { type: 'array', items: { type: 'object', properties: { id: { type: 'string' }, name: { type: 'string' } } } },
+            customers: {
+              type: 'array',
+              items: { type: 'object', properties: { id: { type: 'string' }, name: { type: 'string' } } },
+            },
             message: { type: 'string' },
             success: { type: 'boolean' },
           },

@@ -7,10 +7,38 @@ import { useTryItStore } from '../state/try-it-store';
 import type { SecuritySchemeInfo } from '../document-model/types';
 
 const SCHEMES: Record<string, SecuritySchemeInfo> = {
-  bearerAuth: { type: 'http', scheme: 'bearer', bearerFormat: 'JWT', in: undefined, name: undefined, description: undefined },
-  basicAuth: { type: 'http', scheme: 'basic', bearerFormat: undefined, in: undefined, name: undefined, description: undefined },
-  apiKeyAuth: { type: 'apiKey', in: 'header', name: 'X-API-Key', scheme: undefined, bearerFormat: undefined, description: undefined },
-  cookieAuth: { type: 'apiKey', in: 'cookie', name: 'session', scheme: undefined, bearerFormat: undefined, description: undefined },
+  bearerAuth: {
+    type: 'http',
+    scheme: 'bearer',
+    bearerFormat: 'JWT',
+    in: undefined,
+    name: undefined,
+    description: undefined,
+  },
+  basicAuth: {
+    type: 'http',
+    scheme: 'basic',
+    bearerFormat: undefined,
+    in: undefined,
+    name: undefined,
+    description: undefined,
+  },
+  apiKeyAuth: {
+    type: 'apiKey',
+    in: 'header',
+    name: 'X-API-Key',
+    scheme: undefined,
+    bearerFormat: undefined,
+    description: undefined,
+  },
+  cookieAuth: {
+    type: 'apiKey',
+    in: 'cookie',
+    name: 'session',
+    scheme: undefined,
+    bearerFormat: undefined,
+    description: undefined,
+  },
 };
 
 describe('<AuthPanel />', () => {

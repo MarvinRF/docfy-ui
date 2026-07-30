@@ -57,7 +57,13 @@ describe('<Sidebar />', () => {
   });
 
   it('renders the title (summary, falling back to operationId) before the method badge', () => {
-    renderSidebar([{ name: 'users', description: undefined, endpoints: [makeEndpoint({ method: 'POST', summary: 'Create a user' })] }]);
+    renderSidebar([
+      {
+        name: 'users',
+        description: undefined,
+        endpoints: [makeEndpoint({ method: 'POST', summary: 'Create a user' })],
+      },
+    ]);
     expect(screen.getByText('POST')).toBeInTheDocument();
     expect(screen.getByText('Create a user')).toBeInTheDocument();
 
@@ -69,7 +75,13 @@ describe('<Sidebar />', () => {
   });
 
   it('falls back to the operationId as the title when summary is missing', () => {
-    renderSidebar([{ name: 'users', description: undefined, endpoints: [makeEndpoint({ operationId: 'findAllUsers', summary: undefined })] }]);
+    renderSidebar([
+      {
+        name: 'users',
+        description: undefined,
+        endpoints: [makeEndpoint({ operationId: 'findAllUsers', summary: undefined })],
+      },
+    ]);
     expect(screen.getByText('findAllUsers')).toBeInTheDocument();
   });
 
@@ -87,7 +99,9 @@ describe('<Sidebar />', () => {
   });
 
   it('links to /:tag/:operationId for each endpoint', () => {
-    renderSidebar([{ name: 'users', description: undefined, endpoints: [makeEndpoint({ operationId: 'findAllUsers' })] }]);
+    renderSidebar([
+      { name: 'users', description: undefined, endpoints: [makeEndpoint({ operationId: 'findAllUsers' })] },
+    ]);
     const link = screen.getByRole('link', { name: /findAllUsers/i });
     expect(link).toHaveAttribute('href', '/users/findAllUsers');
   });
@@ -95,7 +109,11 @@ describe('<Sidebar />', () => {
   it('keeps each tag group scoped to its own endpoints', () => {
     const groups: TagGroup[] = [
       { name: 'users', description: undefined, endpoints: [makeEndpoint({ operationId: 'findAllUsers' })] },
-      { name: 'orders', description: undefined, endpoints: [makeEndpoint({ path: '/orders', operationId: 'findAllOrders' })] },
+      {
+        name: 'orders',
+        description: undefined,
+        endpoints: [makeEndpoint({ path: '/orders', operationId: 'findAllOrders' })],
+      },
     ];
     renderSidebar(groups);
 
@@ -133,7 +151,11 @@ describe('<Sidebar />', () => {
   it('highlights the link matching the current route as active, with the left accent bar', () => {
     const groups: TagGroup[] = [
       { name: 'users', description: undefined, endpoints: [makeEndpoint({ operationId: 'findAllUsers' })] },
-      { name: 'orders', description: undefined, endpoints: [makeEndpoint({ path: '/orders', operationId: 'findAllOrders' })] },
+      {
+        name: 'orders',
+        description: undefined,
+        endpoints: [makeEndpoint({ path: '/orders', operationId: 'findAllOrders' })],
+      },
     ];
     renderSidebar(groups, { initialPath: '/users/findAllUsers' });
 

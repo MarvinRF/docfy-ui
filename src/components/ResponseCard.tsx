@@ -30,8 +30,14 @@ export function ResponseCard({ response, defaultOpen }: ResponseCardProps) {
 
   return (
     <div className="overflow-hidden rounded-xl border border-border bg-surface transition-colors hover:border-border-strong">
-      <button type="button" onClick={() => setOpen((v) => !v)} className="flex w-full items-center gap-3 px-4 py-3 text-left">
-        <ChevronRight className={cn('size-4 text-muted-foreground transition-transform duration-300', open && 'rotate-90')} />
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        className="flex w-full items-center gap-3 px-4 py-3 text-left"
+      >
+        <ChevronRight
+          className={cn('size-4 text-muted-foreground transition-transform duration-300', open && 'rotate-90')}
+        />
         <span
           className={cn(
             'rounded-md px-1.5 py-0.5 font-mono text-[11px] font-semibold ring-1 ring-inset',
@@ -42,7 +48,12 @@ export function ResponseCard({ response, defaultOpen }: ResponseCardProps) {
         </span>
         {label && <span className="text-[13.5px] text-foreground">{label}</span>}
       </button>
-      <div className={cn('grid transition-[grid-template-rows] duration-300 ease-out', open ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]')}>
+      <div
+        className={cn(
+          'grid transition-[grid-template-rows] duration-300 ease-out',
+          open ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]',
+        )}
+      >
         <div className="overflow-hidden">
           <div className="px-4 pb-4">
             <CodeBlock code={code} language="json" variant="inline" showCopy />

@@ -23,7 +23,10 @@ describe('useOpenApiSpec()', () => {
   });
 
   it('starts in the loading state', () => {
-    vi.stubGlobal('fetch', vi.fn(() => new Promise(() => {})));
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(() => new Promise(() => {})),
+    );
     const { result } = renderHook(() => useOpenApiSpec('/api-json'));
     expect(result.current.status).toBe('loading');
   });
@@ -31,7 +34,9 @@ describe('useOpenApiSpec()', () => {
   it('transitions to success with the normalized Document Model', async () => {
     vi.stubGlobal(
       'fetch',
-      vi.fn(() => Promise.resolve({ ok: true, status: 200, statusText: 'OK', json: () => Promise.resolve(SAMPLE_SPEC) })),
+      vi.fn(() =>
+        Promise.resolve({ ok: true, status: 200, statusText: 'OK', json: () => Promise.resolve(SAMPLE_SPEC) }),
+      ),
     );
 
     const { result } = renderHook(() => useOpenApiSpec('/api-json'));
@@ -58,7 +63,10 @@ describe('useOpenApiSpec()', () => {
   });
 
   it('transitions to error when fetch itself rejects (network failure)', async () => {
-    vi.stubGlobal('fetch', vi.fn(() => Promise.reject(new Error('Network down'))));
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(() => Promise.reject(new Error('Network down'))),
+    );
 
     const { result } = renderHook(() => useOpenApiSpec('/api-json'));
 

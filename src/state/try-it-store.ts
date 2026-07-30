@@ -15,7 +15,14 @@ function getInitialAuthValues(): Record<string, string> {
 }
 
 export type TryItResult =
-  | { kind: 'success'; status: number; statusText: string; headers: [string, string][]; bodyText: string; durationMs: number }
+  | {
+      kind: 'success';
+      status: number;
+      statusText: string;
+      headers: [string, string][];
+      bodyText: string;
+      durationMs: number;
+    }
   | { kind: 'network-error'; message: string };
 
 export interface TryItRequestState {

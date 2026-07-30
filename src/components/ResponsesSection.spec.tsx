@@ -22,7 +22,11 @@ describe('<ResponsesSection />', () => {
   });
 
   it('falls back to standard status text when description is missing', () => {
-    render(<ResponsesSection responses={[{ status: '500', description: undefined, contentType: undefined, schema: undefined }]} />);
+    render(
+      <ResponsesSection
+        responses={[{ status: '500', description: undefined, contentType: undefined, schema: undefined }]}
+      />,
+    );
     expect(screen.getByText('Internal Server Error')).toBeInTheDocument();
   });
 

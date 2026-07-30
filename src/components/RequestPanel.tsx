@@ -1,10 +1,6 @@
 import { useState } from 'react';
 import type { Endpoint, SecuritySchemeInfo } from '../document-model/types';
-import {
-  buildCodeSnippet,
-  SNIPPET_LANGUAGES,
-  type SnippetLang,
-} from '../transformers/code-snippets';
+import { buildCodeSnippet, SNIPPET_LANGUAGES, type SnippetLang } from '../transformers/code-snippets';
 import { MethodBadge } from './MethodBadge';
 import { CodeBlock } from './CodeBlock';
 import { CopyButton } from './CopyButton';
@@ -59,7 +55,11 @@ export function RequestPanel({ endpoint, baseUrl, securitySchemes = {}, servers 
 
       {mode === 'code' ? (
         <>
-          <div role="tablist" aria-label="Snippet language" className="flex flex-wrap gap-1 border-b border-white/10 px-2 py-1.5">
+          <div
+            role="tablist"
+            aria-label="Snippet language"
+            className="flex flex-wrap gap-1 border-b border-white/10 px-2 py-1.5"
+          >
             {SNIPPET_LANGUAGES.map((l) => (
               <button
                 key={l.id}
@@ -78,7 +78,13 @@ export function RequestPanel({ endpoint, baseUrl, securitySchemes = {}, servers 
           </div>
 
           <div key={lang} className="animate-fade-in">
-            <CodeBlock code={snippet} language={lang} variant="terminal" showCopy={false} className="rounded-none ring-0" />
+            <CodeBlock
+              code={snippet}
+              language={lang}
+              variant="terminal"
+              showCopy={false}
+              className="rounded-none ring-0"
+            />
           </div>
 
           <div className="flex items-center justify-between gap-2 border-t border-white/10 p-3">

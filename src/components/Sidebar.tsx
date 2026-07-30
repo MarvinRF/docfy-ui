@@ -1,12 +1,12 @@
-import { useState } from "react";
-import { Link, useLocation } from "react-router-dom";
-import { ChevronDown, GitCompare, Moon, Search, Sun, X } from "lucide-react";
-import type { TagGroup } from "../document-model/types";
-import { useThemeStore } from "../state/theme-store";
-import { MethodBadge } from "./MethodBadge";
-import { NestLogo } from "./NestLogo";
-import { SpecSwitcher } from "./SpecSwitcher";
-import { cn } from "../lib/utils";
+import { useState } from 'react';
+import { Link, useLocation } from 'react-router-dom';
+import { ChevronDown, GitCompare, Moon, Search, Sun, X } from 'lucide-react';
+import type { TagGroup } from '../document-model/types';
+import { useThemeStore } from '../state/theme-store';
+import { MethodBadge } from './MethodBadge';
+import { NestLogo } from './NestLogo';
+import { SpecSwitcher } from './SpecSwitcher';
+import { cn } from '../lib/utils';
 
 export interface SidebarProps {
   tagGroups: TagGroup[];
@@ -16,30 +16,17 @@ export interface SidebarProps {
   onSearchOpen: () => void;
 }
 
-function endpointId(endpoint: {
-  method: string;
-  path: string;
-  operationId?: string;
-}): string {
+function endpointId(endpoint: { method: string; path: string; operationId?: string }): string {
   return endpoint.operationId ?? `${endpoint.method}-${endpoint.path}`;
 }
 
 /** Same fallback chain as `OperationHeader`'s title — summary, then operationId, then the raw path. */
-function endpointTitle(endpoint: {
-  path: string;
-  operationId?: string;
-  summary?: string;
-}): string {
+function endpointTitle(endpoint: { path: string; operationId?: string; summary?: string }): string {
   return endpoint.summary ?? endpoint.operationId ?? endpoint.path;
 }
 
 /** Brand + search trigger + theme toggle + tag tree + footer — the whole left rail, mirroring the reference design's self-contained Sidebar. */
-export function Sidebar({
-  tagGroups,
-  mobileOpen,
-  onCloseMobile,
-  onSearchOpen,
-}: SidebarProps) {
+export function Sidebar({ tagGroups, mobileOpen, onCloseMobile, onSearchOpen }: SidebarProps) {
   const [collapsed, setCollapsed] = useState<Set<string>>(new Set());
   // `useParams()` only sees params from the nearest matching `<Route>` ancestor —
   // Sidebar sits beside `<Routes>`, not inside the `/:tag/:operationId` route, so
@@ -71,8 +58,8 @@ export function Sidebar({
 
       <aside
         className={cn(
-          "fixed inset-y-0 left-0 z-40 flex h-full w-[280px] flex-col border-r border-border bg-surface shadow-warm-lg transition-transform duration-300 ease-out lg:static lg:z-auto lg:translate-x-0 lg:shadow-none",
-          mobileOpen ? "translate-x-0" : "-translate-x-full",
+          'fixed inset-y-0 left-0 z-40 flex h-full w-[280px] flex-col border-r border-border bg-surface shadow-warm-lg transition-transform duration-300 ease-out lg:static lg:z-auto lg:translate-x-0 lg:shadow-none',
+          mobileOpen ? 'translate-x-0' : '-translate-x-full',
         )}
       >
         <div className="flex items-center justify-between gap-2 px-4 pt-4 pb-3">
@@ -80,9 +67,7 @@ export function Sidebar({
             <div className="relative grid size-9 place-items-center rounded-lg bg-primary text-primary-foreground shadow-glow">
               <NestLogo className="size-9 text-white dark:text-black" />
             </div>
-            <span className="text-[13px] font-semibold tracking-tight">
-              Nest Docfy - Api Reference
-            </span>
+            <span className="text-[13px] font-semibold tracking-tight">Nest Docfy - Api Reference</span>
           </div>
           <button
             type="button"
@@ -111,34 +96,25 @@ export function Sidebar({
           <button
             type="button"
             onClick={toggleTheme}
-            aria-label={
-              theme === "dark" ? "Switch to light mode" : "Switch to dark mode"
-            }
+            aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
             className="relative grid size-8 shrink-0 place-items-center overflow-hidden rounded-lg border border-border bg-surface-sunken text-foreground transition-colors hover:border-border-strong hover:bg-muted"
           >
             <Sun
               className={cn(
-                "absolute size-4 transition-all duration-500",
-                theme === "light"
-                  ? "rotate-0 opacity-100"
-                  : "rotate-90 opacity-0",
+                'absolute size-4 transition-all duration-500',
+                theme === 'light' ? 'rotate-0 opacity-100' : 'rotate-90 opacity-0',
               )}
             />
             <Moon
               className={cn(
-                "absolute size-4 transition-all duration-500",
-                theme === "dark"
-                  ? "rotate-0 opacity-100"
-                  : "-rotate-90 opacity-0",
+                'absolute size-4 transition-all duration-500',
+                theme === 'dark' ? 'rotate-0 opacity-100' : '-rotate-90 opacity-0',
               )}
             />
           </button>
         </div>
 
-        <nav
-          aria-label="Endpoints"
-          className="themed-scroll flex-1 overflow-y-auto px-3 pb-3"
-        >
+        <nav aria-label="Endpoints" className="themed-scroll flex-1 overflow-y-auto px-3 pb-3">
           {tagGroups.map((group) => {
             const isCollapsed = collapsed.has(group.name);
             return (
@@ -153,10 +129,7 @@ export function Sidebar({
                   <ChevronDown
                     aria-hidden="true"
                     size={13}
-                    className={cn(
-                      "transition-transform duration-150",
-                      isCollapsed ? "-rotate-90" : "rotate-0",
-                    )}
+                    className={cn('transition-transform duration-150', isCollapsed ? '-rotate-90' : 'rotate-0')}
                   />
                 </button>
 
@@ -167,17 +140,15 @@ export function Sidebar({
                       const href = `/${encodeURIComponent(group.name)}/${encodeURIComponent(id)}`;
                       const isActive = location.pathname === href;
                       return (
-                        <li
-                          key={`${group.name}-${endpoint.method}-${endpoint.path}`}
-                        >
+                        <li key={`${group.name}-${endpoint.method}-${endpoint.path}`}>
                           <Link
                             to={href}
                             onClick={onCloseMobile}
                             className={cn(
-                              "relative flex w-full items-center justify-between gap-2 rounded-md px-3 py-1.5 text-[13px] transition-all duration-200 hover:translate-x-0.5",
+                              'relative flex w-full items-center justify-between gap-2 rounded-md px-3 py-1.5 text-[13px] transition-all duration-200 hover:translate-x-0.5',
                               isActive
-                                ? "bg-primary/10 font-semibold text-foreground"
-                                : "text-muted-foreground hover:bg-muted hover:text-foreground",
+                                ? 'bg-primary/10 font-semibold text-foreground'
+                                : 'text-muted-foreground hover:bg-muted hover:text-foreground',
                             )}
                           >
                             {isActive && (
@@ -186,9 +157,7 @@ export function Sidebar({
                                 className="absolute inset-y-1.5 left-0 w-0.5 rounded-r bg-primary"
                               />
                             )}
-                            <span className="truncate text-left">
-                              {endpointTitle(endpoint)}
-                            </span>
+                            <span className="truncate text-left">{endpointTitle(endpoint)}</span>
                             <MethodBadge method={endpoint.method} />
                           </Link>
                         </li>
@@ -206,10 +175,10 @@ export function Sidebar({
             to="/compare"
             onClick={onCloseMobile}
             className={cn(
-              "flex items-center gap-2 rounded-md px-2 py-1.5 text-[12.5px] transition-colors",
-              location.pathname === "/compare"
-                ? "bg-primary/10 font-semibold text-foreground"
-                : "text-muted-foreground hover:bg-muted hover:text-foreground",
+              'flex items-center gap-2 rounded-md px-2 py-1.5 text-[12.5px] transition-colors',
+              location.pathname === '/compare'
+                ? 'bg-primary/10 font-semibold text-foreground'
+                : 'text-muted-foreground hover:bg-muted hover:text-foreground',
             )}
           >
             <GitCompare className="size-3.5" />

@@ -43,7 +43,10 @@ describe('<ResponseViewer />', () => {
     });
 
     const { container } = render(
-      <ResponseViewer responses={[{ status: '200', description: 'OK', contentType: 'application/json', schema: undefined }]} endpointKey="GET /items" />,
+      <ResponseViewer
+        responses={[{ status: '200', description: 'OK', contentType: 'application/json', schema: undefined }]}
+        endpointKey="GET /items"
+      />,
     );
 
     expect(container.querySelector('code')?.textContent).toBe(JSON.stringify({ a: 1, b: { c: [1, 2, 3] } }, null, 2));
@@ -60,7 +63,10 @@ describe('<ResponseViewer />', () => {
     });
 
     const { container } = render(
-      <ResponseViewer responses={[{ status: '200', description: 'OK', contentType: 'text/plain', schema: undefined }]} endpointKey="GET /items" />,
+      <ResponseViewer
+        responses={[{ status: '200', description: 'OK', contentType: 'text/plain', schema: undefined }]}
+        endpointKey="GET /items"
+      />,
     );
 
     expect(container.querySelector('code')?.textContent).toBe('plain text response');
@@ -91,7 +97,16 @@ describe('<ResponseViewer />', () => {
   });
 
   describe('"Use as ... token" button', () => {
-    const bearerScheme = { bearerAuth: { type: 'http' as const, scheme: 'bearer', bearerFormat: 'JWT', in: undefined, name: undefined, description: undefined } };
+    const bearerScheme = {
+      bearerAuth: {
+        type: 'http' as const,
+        scheme: 'bearer',
+        bearerFormat: 'JWT',
+        in: undefined,
+        name: undefined,
+        description: undefined,
+      },
+    };
 
     it('appears when the live body contains a token-shaped field and a bearer scheme is declared', async () => {
       useTryItStore.getState().setResult('POST /auth/login', {
@@ -151,7 +166,12 @@ describe('<ResponseViewer />', () => {
     const { container } = render(
       <ResponseViewer
         responses={[
-          { status: '200', description: 'OK', contentType: 'application/json', schema: { type: 'object', properties: { id: { type: 'string' } } } },
+          {
+            status: '200',
+            description: 'OK',
+            contentType: 'application/json',
+            schema: { type: 'object', properties: { id: { type: 'string' } } },
+          },
           { status: '404', description: 'Not Found', contentType: undefined, schema: undefined },
         ]}
       />,
@@ -166,7 +186,12 @@ describe('<ResponseViewer />', () => {
     const { container } = render(
       <ResponseViewer
         responses={[
-          { status: '200', description: 'OK', contentType: 'application/json', schema: { type: 'object', properties: { id: { type: 'string' } } } },
+          {
+            status: '200',
+            description: 'OK',
+            contentType: 'application/json',
+            schema: { type: 'object', properties: { id: { type: 'string' } } },
+          },
           { status: '404', description: 'Not Found', contentType: undefined, schema: undefined },
         ]}
       />,
@@ -177,7 +202,11 @@ describe('<ResponseViewer />', () => {
   });
 
   it('shows a "No Content" placeholder for a response with no schema', () => {
-    const { container } = render(<ResponseViewer responses={[{ status: '204', description: 'No Content', contentType: undefined, schema: undefined }]} />);
+    const { container } = render(
+      <ResponseViewer
+        responses={[{ status: '204', description: 'No Content', contentType: undefined, schema: undefined }]}
+      />,
+    );
     expect(container.querySelector('code')?.textContent).toMatch(/204 — No Content/);
   });
 });

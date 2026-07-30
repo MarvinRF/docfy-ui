@@ -31,17 +31,23 @@ export function useCopyToClipboard(resetMs = 1500): { copied: boolean; copy: (te
     timeoutRef.current = window.setTimeout(() => setCopied(false), resetMs);
   }, [resetMs]);
 
-  const copy = useCallback((text: string) => {
-    if (navigator.clipboard?.writeText) {
-      navigator.clipboard.writeText(text).then(markCopied).catch(() => {
+  const copy = useCallback(
+    (text: string) => {
+      if (navigator.clipboard?.writeText) {
+        navigator.clipboard
+          .writeText(text)
+          .then(markCopied)
+          .catch(() => {
+            fallbackCopy(text);
+            markCopied();
+          });
+      } else {
         fallbackCopy(text);
         markCopied();
-      });
-    } else {
-      fallbackCopy(text);
-      markCopied();
-    }
-  }, [markCopied]);
+      }
+    },
+    [markCopied],
+  );
 
   return { copied, copy };
 }

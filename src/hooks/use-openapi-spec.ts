@@ -3,9 +3,7 @@ import { normalizeDocument } from '../document-model/normalize';
 import type { DocumentModel } from '../document-model/types';
 
 export type SpecState =
-  | { status: 'loading' }
-  | { status: 'error'; error: string }
-  | { status: 'success'; data: DocumentModel };
+  { status: 'loading' } | { status: 'error'; error: string } | { status: 'success'; data: DocumentModel };
 
 /**
  * Fetches an OpenAPI JSON spec from `url` (same-origin by default — e.g.

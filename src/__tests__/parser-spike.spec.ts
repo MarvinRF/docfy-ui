@@ -22,14 +22,14 @@ const fixture31 = path.join(__dirname, 'fixtures', 'spec-3.1.json');
  */
 describe('parser spike — OpenAPI 3.0', () => {
   it('dereferences 3.0 without error', async () => {
-    const result = await SwaggerParser.dereference(fixture30) as Record<string, unknown>;
+    const result = (await SwaggerParser.dereference(fixture30)) as Record<string, unknown>;
     expect(result.openapi).toBe('3.0.3');
   });
 });
 
 describe('parser spike — OpenAPI 3.1', () => {
   it('dereferences 3.1 and preserves type:[..] nullable unions', async () => {
-    const result = await SwaggerParser.dereference(fixture31) as any;
+    const result = (await SwaggerParser.dereference(fixture31)) as any;
     expect(result.openapi).toBe('3.1.0');
 
     const userSchema = result.components.schemas.User;
@@ -38,7 +38,7 @@ describe('parser spike — OpenAPI 3.1', () => {
   });
 
   it('preserves `const` inside oneOf branches', async () => {
-    const result = await SwaggerParser.dereference(fixture31) as any;
+    const result = (await SwaggerParser.dereference(fixture31)) as any;
     const roleSchema = result.components.schemas.CreateUserDto.properties.role;
     expect(roleSchema.oneOf).toHaveLength(2);
     expect(roleSchema.oneOf[0].properties.kind.const).toBe('admin');
@@ -47,7 +47,7 @@ describe('parser spike — OpenAPI 3.1', () => {
 
 describe('parser spike — circular refs (recursive DTO)', () => {
   it('resolves a self-referencing schema as an object cycle, not infinite recursion', async () => {
-    const result = await SwaggerParser.dereference(fixture30) as any;
+    const result = (await SwaggerParser.dereference(fixture30)) as any;
     const userSchema = result.components.schemas.User;
     expect(userSchema.properties.parent).toBe(userSchema);
   });

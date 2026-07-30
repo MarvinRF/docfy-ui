@@ -25,7 +25,9 @@ describe('<RequestBodySection />', () => {
   });
 
   it('shows a "No content" placeholder when the body has no schema', () => {
-    render(<RequestBodySection requestBody={{ required: false, contentType: 'application/json', schema: undefined }} />);
+    render(
+      <RequestBodySection requestBody={{ required: false, contentType: 'application/json', schema: undefined }} />,
+    );
     expect(screen.getByTestId('request-body-section').textContent).toMatch(/No content/);
   });
 

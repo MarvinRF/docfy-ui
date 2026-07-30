@@ -55,7 +55,11 @@ describe('<TryItForm />', () => {
 
   it('prefills the body textarea with a generated example', () => {
     const endpoint = makeEndpoint({
-      requestBody: { required: true, contentType: 'application/json', schema: { type: 'object', properties: { name: { type: 'string' } } } },
+      requestBody: {
+        required: true,
+        contentType: 'application/json',
+        schema: { type: 'object', properties: { name: { type: 'string' } } },
+      },
     });
     render(<TryItForm endpoint={endpoint} baseUrl="https://api.example.com" securitySchemes={{}} />);
     expect((screen.getByLabelText('Body') as HTMLTextAreaElement).value).toContain('name');
@@ -66,7 +70,12 @@ describe('<TryItForm />', () => {
     let resolveFetch: (value: Response) => void = () => {};
     vi.stubGlobal(
       'fetch',
-      vi.fn(() => new Promise<Response>((resolve) => { resolveFetch = resolve; })),
+      vi.fn(
+        () =>
+          new Promise<Response>((resolve) => {
+            resolveFetch = resolve;
+          }),
+      ),
     );
 
     render(<TryItForm endpoint={makeEndpoint()} baseUrl="https://api.example.com" securitySchemes={{}} />);

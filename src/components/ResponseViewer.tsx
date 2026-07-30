@@ -91,15 +91,22 @@ export function ResponseViewer({ responses, endpointKey, securitySchemes = {} }:
     const liveStatusClass =
       liveResult.kind === 'success' ? statusClasses(String(liveResult.status)) : 'bg-destructive/15 text-destructive';
 
-    const token = liveResult.kind === 'success' && liveResult.bodyText ? findLikelyToken(liveResult.bodyText) : undefined;
+    const token =
+      liveResult.kind === 'success' && liveResult.bodyText ? findLikelyToken(liveResult.bodyText) : undefined;
     const tokenSchemeName = token ? findBearerSchemeName(securitySchemes) : undefined;
 
     return (
       <div className="min-w-0 overflow-hidden rounded-2xl border border-border bg-surface shadow-warm">
         <div className="flex items-center gap-1 border-b border-border bg-surface-sunken px-2 py-1.5">
-          <span className="px-2 text-[10.5px] font-semibold uppercase tracking-wider text-muted-foreground">Response</span>
+          <span className="px-2 text-[10.5px] font-semibold uppercase tracking-wider text-muted-foreground">
+            Response
+          </span>
           <div className="ml-auto flex items-center gap-1">
-            <button type="button" onClick={() => setStatus(LIVE_TAB)} className={cn('rounded-md px-2 py-1 font-mono text-[11px] transition-colors', liveStatusClass)}>
+            <button
+              type="button"
+              onClick={() => setStatus(LIVE_TAB)}
+              className={cn('rounded-md px-2 py-1 font-mono text-[11px] transition-colors', liveStatusClass)}
+            >
               Live · {liveStatusLabel}
             </button>
             {responses.map((r) => (
@@ -116,7 +123,9 @@ export function ResponseViewer({ responses, endpointKey, securitySchemes = {} }:
         </div>
         <div key="live" className="animate-fade-in-up">
           <div className="flex items-center justify-between px-4 pt-2">
-            {liveResult.kind === 'success' && <p className="text-[11px] text-muted-foreground">{liveResult.durationMs.toFixed(0)}ms</p>}
+            {liveResult.kind === 'success' && (
+              <p className="text-[11px] text-muted-foreground">{liveResult.durationMs.toFixed(0)}ms</p>
+            )}
             {token && tokenSchemeName && <UseTokenButton schemeName={tokenSchemeName} token={token} />}
           </div>
           <CodeBlock code={liveCode} language="json" variant="inline" showCopy className="rounded-none ring-0" />
@@ -141,10 +150,16 @@ export function ResponseViewer({ responses, endpointKey, securitySchemes = {} }:
   return (
     <div className="min-w-0 overflow-hidden rounded-2xl border border-border bg-surface shadow-warm">
       <div className="flex items-center gap-1 border-b border-border bg-surface-sunken px-2 py-1.5">
-        <span className="px-2 text-[10.5px] font-semibold uppercase tracking-wider text-muted-foreground">Response</span>
+        <span className="px-2 text-[10.5px] font-semibold uppercase tracking-wider text-muted-foreground">
+          Response
+        </span>
         <div className="ml-auto flex items-center gap-1">
           {liveResult && (
-            <button type="button" onClick={() => setStatus(LIVE_TAB)} className="rounded-md px-2 py-1 font-mono text-[11px] text-muted-foreground transition-colors hover:bg-muted">
+            <button
+              type="button"
+              onClick={() => setStatus(LIVE_TAB)}
+              className="rounded-md px-2 py-1 font-mono text-[11px] text-muted-foreground transition-colors hover:bg-muted"
+            >
               Live
             </button>
           )}

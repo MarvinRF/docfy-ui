@@ -1,12 +1,12 @@
-import { useEffect, useState } from "react";
-import { Routes, Route } from "react-router-dom";
-import { Menu } from "lucide-react";
-import type { SecuritySchemeInfo, TagGroup } from "../document-model/types";
-import { Sidebar } from "./Sidebar";
-import { SearchModal } from "./SearchModal";
-import { EndpointRoute } from "./EndpointRoute";
-import { EmptyState } from "./EmptyState";
-import { ComparePage } from "./ComparePage";
+import { useEffect, useState } from 'react';
+import { Routes, Route } from 'react-router-dom';
+import { Menu } from 'lucide-react';
+import type { SecuritySchemeInfo, TagGroup } from '../document-model/types';
+import { Sidebar } from './Sidebar';
+import { SearchModal } from './SearchModal';
+import { EndpointRoute } from './EndpointRoute';
+import { EmptyState } from './EmptyState';
+import { ComparePage } from './ComparePage';
 
 export interface ShellProps {
   tagGroups: TagGroup[];
@@ -28,13 +28,13 @@ export function Shell({ tagGroups, specUrl, securitySchemes = {}, servers = [] }
 
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
-      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
         e.preventDefault();
         setSearchOpen(true);
       }
     }
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
   }, []);
 
   return (
@@ -45,11 +45,7 @@ export function Shell({ tagGroups, specUrl, securitySchemes = {}, servers = [] }
         onCloseMobile={() => setSidebarOpen(false)}
         onSearchOpen={() => setSearchOpen(true)}
       />
-      <SearchModal
-        open={searchOpen}
-        onOpenChange={setSearchOpen}
-        tagGroups={tagGroups}
-      />
+      <SearchModal open={searchOpen} onOpenChange={setSearchOpen} tagGroups={tagGroups} />
 
       <div className="flex min-w-0 flex-1 flex-col">
         <div className="sticky top-0 z-20 flex items-center justify-between border-b border-border bg-surface/80 px-4 py-2 backdrop-blur lg:hidden">
@@ -61,9 +57,7 @@ export function Shell({ tagGroups, specUrl, securitySchemes = {}, servers = [] }
           >
             <Menu size={18} />
           </button>
-          <span className="font-mono text-[11.5px] text-muted-foreground">
-            Nest Docfy
-          </span>
+          <span className="font-mono text-[11.5px] text-muted-foreground">Nest Docfy</span>
           <span className="w-7" />
         </div>
 

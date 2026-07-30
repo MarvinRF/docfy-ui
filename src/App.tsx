@@ -22,7 +22,11 @@ export function App() {
   }
 
   if (spec.status === 'error') {
-    return <CenteredMessage>Failed to load spec from {specUrl}: {spec.error}</CenteredMessage>;
+    return (
+      <CenteredMessage>
+        Failed to load spec from {specUrl}: {spec.error}
+      </CenteredMessage>
+    );
   }
 
   return (

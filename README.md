@@ -108,19 +108,16 @@ This package ships a pre-built static bundle (`dist/`); there is no server-side 
 The simplest setup if your backend is NestJS: let `nestjs-docfy` mount this package for you.
 
 ```ts
-import { NestFactory } from "@nestjs/core";
-import { SwaggerModule, DocumentBuilder } from "@nestjs/swagger";
-import { DocfyUiModule } from "nestjs-docfy";
+import { NestFactory } from '@nestjs/core';
+import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
+import { DocfyUiModule } from 'nestjs-docfy';
 
 const app = await NestFactory.create(AppModule);
 
-DocfyUiModule.setup("/docs", app); // before SwaggerModule.setup
+DocfyUiModule.setup('/docs', app); // before SwaggerModule.setup
 
-const document = SwaggerModule.createDocument(
-  app,
-  new DocumentBuilder().build(),
-);
-SwaggerModule.setup("api", app, document); // exposes /api-json, which docfy-ui fetches by default
+const document = SwaggerModule.createDocument(app, new DocumentBuilder().build());
+SwaggerModule.setup('api', app, document); // exposes /api-json, which docfy-ui fetches by default
 
 await app.listen(3000);
 ```
@@ -141,10 +138,10 @@ Serve `dist/` with any static host (NestJS's `ServeStaticModule`, Nginx, S3 + Cl
 
 The UI has no build-time configuration. It resolves the spec to render entirely at runtime, via one rule with one override:
 
-| Source                        | When                                                                                            | Example                                                                     |
-| ----------------------------- | ----------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------- |
+| Source                        | When                                                                                           | Example                                                                     |
+| ----------------------------- | ---------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------- |
 | `GET /api-json` (same-origin) | Default: matches what `@nestjs/swagger`'s `SwaggerModule.setup()` exposes alongside Swagger UI | `https://api.example.com/docs` → fetches `https://api.example.com/api-json` |
-| `?spec=<url>` query param     | Takes precedence over the default when present                                                  | `https://docs.example.com/?spec=https://api.example.com/api-json`           |
+| `?spec=<url>` query param     | Takes precedence over the default when present                                                 | `https://docs.example.com/?spec=https://api.example.com/api-json`           |
 
 If the UI is deployed on a different origin than the API, use the `?spec=` override and make sure the API's CORS configuration allows that origin to `GET` the JSON document.
 

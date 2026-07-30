@@ -18,9 +18,7 @@ function paramTypeToken(param: ParameterInfo): string {
 /** Builds the request URL with query parameters rendered as `name=type` placeholders, never fake values. */
 export function buildSnippetUrl(endpoint: Endpoint, baseUrl: string): string {
   const queryParams = endpoint.parameters.filter((p) => p.in === 'query');
-  const query = queryParams.length > 0
-    ? `?${queryParams.map((p) => `${p.name}=${paramTypeToken(p)}`).join('&')}`
-    : '';
+  const query = queryParams.length > 0 ? `?${queryParams.map((p) => `${p.name}=${paramTypeToken(p)}`).join('&')}` : '';
   const base = baseUrl.replace(/\/+$/, '');
   return `${base}${endpoint.path}${query}`;
 }
@@ -60,7 +58,9 @@ function pythonSnippet(endpoint: Endpoint, url: string, bodyJson: string | undef
   // never numbers/booleans/null) — valid Python dict literal syntax as-is.
   const method = endpoint.method.toLowerCase();
   const lines = ['import requests', ''];
-  lines.push(bodyJson ? `response = requests.${method}('${url}', json=${bodyJson})` : `response = requests.${method}('${url}')`);
+  lines.push(
+    bodyJson ? `response = requests.${method}('${url}', json=${bodyJson})` : `response = requests.${method}('${url}')`,
+  );
   lines.push('print(response.json())');
   return lines.join('\n');
 }

@@ -42,16 +42,44 @@ describe('buildRequestUrl()', () => {
 
 describe('applyAuth()', () => {
   const apiKeyScheme: Record<string, SecuritySchemeInfo> = {
-    apiKeyAuth: { type: 'apiKey', in: 'header', name: 'X-API-Key', scheme: undefined, bearerFormat: undefined, description: undefined },
+    apiKeyAuth: {
+      type: 'apiKey',
+      in: 'header',
+      name: 'X-API-Key',
+      scheme: undefined,
+      bearerFormat: undefined,
+      description: undefined,
+    },
   };
   const bearerScheme: Record<string, SecuritySchemeInfo> = {
-    bearerAuth: { type: 'http', scheme: 'bearer', bearerFormat: 'JWT', in: undefined, name: undefined, description: undefined },
+    bearerAuth: {
+      type: 'http',
+      scheme: 'bearer',
+      bearerFormat: 'JWT',
+      in: undefined,
+      name: undefined,
+      description: undefined,
+    },
   };
   const basicScheme: Record<string, SecuritySchemeInfo> = {
-    basicAuth: { type: 'http', scheme: 'basic', bearerFormat: undefined, in: undefined, name: undefined, description: undefined },
+    basicAuth: {
+      type: 'http',
+      scheme: 'basic',
+      bearerFormat: undefined,
+      in: undefined,
+      name: undefined,
+      description: undefined,
+    },
   };
   const apiKeyQueryScheme: Record<string, SecuritySchemeInfo> = {
-    apiKeyQuery: { type: 'apiKey', in: 'query', name: 'api_key', scheme: undefined, bearerFormat: undefined, description: undefined },
+    apiKeyQuery: {
+      type: 'apiKey',
+      in: 'query',
+      name: 'api_key',
+      scheme: undefined,
+      bearerFormat: undefined,
+      description: undefined,
+    },
   };
 
   it('sets an apiKey header when the scheme value is present', () => {
@@ -80,9 +108,15 @@ describe('applyAuth()', () => {
 
   it('picks the first alternative that has a value filled in', () => {
     const headers = new Headers();
-    applyAuth('http://x/y', headers, [{ apiKeyAuth: [] }, { bearerAuth: [] }], { ...apiKeyScheme, ...bearerScheme }, {
-      bearerAuth: 'token123',
-    });
+    applyAuth(
+      'http://x/y',
+      headers,
+      [{ apiKeyAuth: [] }, { bearerAuth: [] }],
+      { ...apiKeyScheme, ...bearerScheme },
+      {
+        bearerAuth: 'token123',
+      },
+    );
     expect(headers.get('Authorization')).toBe('Bearer token123');
     expect(headers.get('X-API-Key')).toBeNull();
   });
@@ -101,9 +135,11 @@ describe('executeRequest()', () => {
   });
 
   it('returns a success result for a resolved fetch', async () => {
-    const fetchMock = vi.fn().mockResolvedValue(
-      new Response('{"ok":true}', { status: 200, statusText: 'OK', headers: { 'content-type': 'application/json' } }),
-    );
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValue(
+        new Response('{"ok":true}', { status: 200, statusText: 'OK', headers: { 'content-type': 'application/json' } }),
+      );
     vi.stubGlobal('fetch', fetchMock);
 
     const endpoint = baseEndpoint({ path: '/items', method: 'GET' });
@@ -185,7 +221,12 @@ describe('executeRequest()', () => {
       const [calledUrl, init] = fetchMock.mock.calls[0];
       expect(calledUrl).toBe('/docs/__docfy_proxy');
       expect(init.method).toBe('POST');
-      expect(JSON.parse(init.body)).toEqual({ method: 'GET', url: 'http://localhost:3000/items', headers: {}, body: undefined });
+      expect(JSON.parse(init.body)).toEqual({
+        method: 'GET',
+        url: 'http://localhost:3000/items',
+        headers: {},
+        body: undefined,
+      });
     });
 
     it('treats a response with X-Docfy-Proxy-Error as a network error, using the JSON message', async () => {
@@ -214,7 +255,10 @@ describe('executeRequest()', () => {
 
     it('treats a response without the proxy-error header as a real success, passthrough status/body', async () => {
       window.__DOCFY_PROXY_PATH__ = '/docs/__docfy_proxy';
-      vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response('{"id":1}', { status: 201, statusText: 'Created' })));
+      vi.stubGlobal(
+        'fetch',
+        vi.fn().mockResolvedValue(new Response('{"id":1}', { status: 201, statusText: 'Created' })),
+      );
 
       const endpoint = baseEndpoint({ path: '/items', method: 'GET' });
       const result = await executeRequest(endpoint, {

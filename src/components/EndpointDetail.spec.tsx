@@ -20,7 +20,12 @@ function makeEndpoint(overrides: Partial<Endpoint> = {}): Endpoint {
       schema: { type: 'object', properties: { email: { type: 'string', format: 'email' } }, required: ['email'] },
     },
     responses: [
-      { status: '201', description: 'Created', contentType: 'application/json', schema: { type: 'object', properties: { id: { type: 'string' } } } },
+      {
+        status: '201',
+        description: 'Created',
+        contentType: 'application/json',
+        schema: { type: 'object', properties: { id: { type: 'string' } } },
+      },
       { status: '400', description: 'Validation Error', contentType: undefined, schema: undefined },
     ],
     security: [],
@@ -67,7 +72,10 @@ describe('<EndpointDetail />', () => {
   it('"Copy OpenAPI" copies valid JSON for the endpoint', async () => {
     const user = userEvent.setup();
     let copiedText = '';
-    const writeText = (text: string) => { copiedText = text; return Promise.resolve(); };
+    const writeText = (text: string) => {
+      copiedText = text;
+      return Promise.resolve();
+    };
     Object.defineProperty(navigator, 'clipboard', { value: { writeText }, configurable: true });
 
     render(<EndpointDetail endpoint={makeEndpoint()} baseUrl="https://api.example.com" />);
@@ -82,7 +90,10 @@ describe('<EndpointDetail />', () => {
   it('"Copy as a Prompt" copies the operationToAiText() output', async () => {
     const user = userEvent.setup();
     let copiedText = '';
-    const writeText = (text: string) => { copiedText = text; return Promise.resolve(); };
+    const writeText = (text: string) => {
+      copiedText = text;
+      return Promise.resolve();
+    };
     Object.defineProperty(navigator, 'clipboard', { value: { writeText }, configurable: true });
 
     render(<EndpointDetail endpoint={makeEndpoint()} baseUrl="https://api.example.com" />);
@@ -95,7 +106,10 @@ describe('<EndpointDetail />', () => {
   it('"Copy MCP Reference" copies method+path and the current page URL', async () => {
     const user = userEvent.setup();
     let copiedText = '';
-    const writeText = (text: string) => { copiedText = text; return Promise.resolve(); };
+    const writeText = (text: string) => {
+      copiedText = text;
+      return Promise.resolve();
+    };
     Object.defineProperty(navigator, 'clipboard', { value: { writeText }, configurable: true });
 
     render(<EndpointDetail endpoint={makeEndpoint()} baseUrl="https://api.example.com" />);
@@ -115,7 +129,12 @@ describe('<EndpointDetail />', () => {
     const user = userEvent.setup();
     let copiedText = '';
     Object.defineProperty(navigator, 'clipboard', {
-      value: { writeText: (text: string) => { copiedText = text; return Promise.resolve(); } },
+      value: {
+        writeText: (text: string) => {
+          copiedText = text;
+          return Promise.resolve();
+        },
+      },
       configurable: true,
     });
 

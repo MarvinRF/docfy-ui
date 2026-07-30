@@ -32,7 +32,10 @@ function TreeNode({ node, depth }: { node: SchemaTreeNode; depth: number }) {
             onClick={() => setExpanded((e) => !e)}
             aria-expanded={expanded}
             aria-label={`Toggle ${node.name}`}
-            className={cn('w-4 shrink-0 text-xs text-muted-foreground transition-transform duration-150', expanded ? 'rotate-0' : '-rotate-90')}
+            className={cn(
+              'w-4 shrink-0 text-xs text-muted-foreground transition-transform duration-150',
+              expanded ? 'rotate-0' : '-rotate-90',
+            )}
           >
             ▾
           </button>

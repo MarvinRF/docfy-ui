@@ -110,7 +110,12 @@ export async function executeRequest(endpoint: Endpoint, options: ExecuteRequest
       ? await fetch(proxyPath, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ method: endpoint.method, url, headers: Object.fromEntries(headers), body: requestBody }),
+          body: JSON.stringify({
+            method: endpoint.method,
+            url,
+            headers: Object.fromEntries(headers),
+            body: requestBody,
+          }),
         })
       : await fetch(url, { method: endpoint.method, headers, body: requestBody });
     const durationMs = performance.now() - started;

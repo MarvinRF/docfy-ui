@@ -24,7 +24,11 @@ function makeEndpoint(overrides: Partial<Endpoint> = {}): Endpoint {
 
 const TAG_GROUPS: TagGroup[] = [
   { name: 'users', description: undefined, endpoints: [makeEndpoint()] },
-  { name: 'orders', description: undefined, endpoints: [makeEndpoint({ path: '/orders', operationId: 'findAllOrders' })] },
+  {
+    name: 'orders',
+    description: undefined,
+    endpoints: [makeEndpoint({ path: '/orders', operationId: 'findAllOrders' })],
+  },
 ];
 
 function renderModal(open: boolean, onOpenChange: (open: boolean) => void, initialEntries = ['/']) {

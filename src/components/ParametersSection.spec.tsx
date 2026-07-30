@@ -32,9 +32,7 @@ describe('<ParametersSection />', () => {
 
   it('renders sections in Path -> Query -> Header order regardless of input order', () => {
     render(
-      <ParametersSection
-        parameters={[makeParam({ name: 'h', in: 'header' }), makeParam({ name: 'p', in: 'path' })]}
-      />,
+      <ParametersSection parameters={[makeParam({ name: 'h', in: 'header' }), makeParam({ name: 'p', in: 'path' })]} />,
     );
     const headings = screen.getAllByRole('heading', { level: 3 }).map((h) => h.textContent);
     expect(headings).toEqual(['Path Parameters', 'Headers']);
