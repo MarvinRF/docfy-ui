@@ -1,3 +1,10 @@
+## [0.5.1](https://github.com/MarvinRF/docfy-ui/compare/v0.5.0...v0.5.1) (2026-07-30)
+
+
+### Bug Fixes
+
+* **ci:** add lint/format steps, narrow matrix to [20.x, 22.x] ([73d0d8e](https://github.com/MarvinRF/docfy-ui/commit/73d0d8e092ed4e6447bdf94418ce947d7357f304))
+
 # [0.5.0](https://github.com/MarvinRF/docfy-ui/compare/v0.4.0...v0.5.0) (2026-07-29)
 
 
