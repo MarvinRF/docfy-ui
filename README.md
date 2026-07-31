@@ -24,6 +24,7 @@ AI-first OpenAPI documentation UI, a companion project to [nestjs-docfy](https:/
 - [Configuration](#configuration)
 - [Copy for AI](#copy-for-ai)
 - [Try it out](#try-it-out)
+- [Guides](#guides)
 - [Document Model](#document-model)
 - [Theming](#theming)
 - [Architecture notes](#architecture-notes)
@@ -87,6 +88,7 @@ POST /users
 - **Try it out**: execute a real request against the API from the browser, with auth support (apiKey/bearer/basic/OAuth2 token), a "Live" response tab, a **"Copy as curl"** button that reproduces the exact request (real typed values and resolved auth, not placeholders), and a **schema match badge** that validates the live response against its declared schema — see [Try it out](#try-it-out).
 - **Compare specs**: diff two OpenAPI documents and flag breaking vs. informational changes (new/removed endpoints, newly-required params, removed response codes).
 - **Multi-spec switcher**: browse more than one service's documentation from a single deployed instance, without leaving the UI.
+- **Guides**: narrative markdown pages (onboarding, tutorials) rendered alongside the generated API reference, listed in the sidebar — see [Guides](#guides).
 - **Two-column endpoint view**: documentation on the left (parameters, responses, navigable schema tree), code snippets (curl, JavaScript fetch, Axios, Python, PHP) on the right.
 - **Real-time search**: filters the sidebar by path/summary/operationId on every keystroke, no debounce, no Enter key.
 - **Dark/light theme**: token-driven, switches instantly with no page reload and no flash on first paint.
@@ -171,6 +173,24 @@ Every endpoint's request panel has a **Code / Try it out** mode switch, next to 
 - **CORS**: by default this is a direct `fetch()` from the browser to the target, so it's subject to the target API's own CORS policy — same constraint as [Configuration](#configuration) above. When `nestjs-docfy`'s `DocfyUiModule.setup()` is configured with `openApiDocument` (see [its README](https://github.com/MarvinRF/nest-docfy#docfyuimodulesetupmountpath-app-options)), `docfy-ui` detects the injected `window.__DOCFY_PROXY_PATH__` and routes the request through a same-origin server-side proxy instead, sidestepping CORS entirely for whatever origins the OpenAPI document declares in `servers[]`.
 
 Out of scope, deliberately: request history, multiple named environments, a full OAuth2 authorization-code/PKCE flow, and cookie-based auth (can't be set reliably cross-site from the browser).
+
+## Guides
+
+Narrative markdown pages — onboarding, tutorials, anything that isn't "here's an endpoint" — rendered at `/guides/:slug` and listed in the sidebar above the endpoint tag tree. `docfy-ui` doesn't own the content; `nestjs-docfy`'s `DocfyUiModule.setup({ guides })` injects it (see [its README](https://github.com/MarvinRF/nest-docfy#docfyuimodulesetupmountpath-app-options)):
+
+```ts
+DocfyUiModule.setup('/docs', app, {
+  guides: [
+    {
+      slug: 'getting-started',
+      title: 'Getting Started',
+      content: fs.readFileSync('./guides/getting-started.md', 'utf8'),
+    },
+  ],
+});
+```
+
+Rendered via [`react-markdown`](https://github.com/remarkjs/react-markdown) + [`remark-gfm`](https://github.com/remarkjs/remark-gfm) (tables, strikethrough, task lists) — no `@tailwindcss/typography` plugin, element styles are hand-mapped to this app's own design tokens instead. Fenced code blocks render through the same `CodeBlock` component used everywhere else (consistent styling, no second syntax highlighter). No guides configured → the sidebar section and `/guides/*` routes simply don't exist, zero visual change.
 
 ## Document Model
 

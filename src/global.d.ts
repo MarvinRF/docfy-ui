@@ -7,6 +7,9 @@ declare global {
     /** Same-origin "Try it out" proxy path injected by DocfyUiModule.setup({ openApiDocument })
      * — when present, executeRequest() posts through it instead of fetching the target directly. */
     __DOCFY_PROXY_PATH__?: string;
+    /** Narrative markdown guides injected by DocfyUiModule.setup({ guides }) — rendered at
+     * `/guides/:slug`, listed in the sidebar above the endpoint tag tree. */
+    __DOCFY_GUIDES__?: { slug: string; title: string; content: string }[];
   }
 }
 

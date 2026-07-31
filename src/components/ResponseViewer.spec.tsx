@@ -245,9 +245,7 @@ describe('<ResponseViewer />', () => {
 
       render(
         <ResponseViewer
-          responses={[
-            { status: '200', description: 'OK', contentType: 'text/plain', schema: { type: 'string' } },
-          ]}
+          responses={[{ status: '200', description: 'OK', contentType: 'text/plain', schema: { type: 'string' } }]}
           endpointKey="GET /items"
         />,
       );

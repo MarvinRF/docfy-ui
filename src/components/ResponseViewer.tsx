@@ -67,17 +67,12 @@ interface SchemaMatchBadgeProps {
 function SchemaMatchBadge({ mismatches }: SchemaMatchBadgeProps) {
   if (mismatches.length === 0) {
     return (
-      <span className="rounded-md bg-success/15 px-2 py-1 text-[11px] font-medium text-success">
-        ✓ Matches schema
-      </span>
+      <span className="rounded-md bg-success/15 px-2 py-1 text-[11px] font-medium text-success">✓ Matches schema</span>
     );
   }
   const title = mismatches.map((m) => `${m.path}: ${m.message}`).join('\n');
   return (
-    <span
-      title={title}
-      className="rounded-md bg-destructive/15 px-2 py-1 text-[11px] font-medium text-destructive"
-    >
+    <span title={title} className="rounded-md bg-destructive/15 px-2 py-1 text-[11px] font-medium text-destructive">
       ⚠ {mismatches.length} schema mismatch{mismatches.length === 1 ? '' : 'es'}
     </span>
   );

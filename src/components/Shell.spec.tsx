@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router-dom';
@@ -55,6 +55,20 @@ describe('<Shell />', () => {
     renderShell('/users/findAllUsers');
     expect(screen.getByRole('heading', { name: 'List all users' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Copy as a Prompt' })).toBeInTheDocument();
+  });
+
+  describe('/guides/:slug', () => {
+    afterEach(() => {
+      delete (window as { __DOCFY_GUIDES__?: unknown }).__DOCFY_GUIDES__;
+    });
+
+    it('renders the matched guide, not the endpoint route or empty state', () => {
+      window.__DOCFY_GUIDES__ = [{ slug: 'getting-started', title: 'Getting Started', content: '# Hello Guide' }];
+      renderShell('/guides/getting-started');
+
+      expect(screen.getByRole('heading', { level: 1, name: 'Hello Guide' })).toBeInTheDocument();
+      expect(screen.queryByText(/select an endpoint/i)).not.toBeInTheDocument();
+    });
   });
 
   it('opens the search modal via the sidebar search trigger', async () => {

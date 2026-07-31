@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, afterEach } from 'vitest';
 import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router-dom';
@@ -172,5 +172,37 @@ describe('<Sidebar />', () => {
     renderSidebar([]);
     const link = screen.getByRole('link', { name: /Compare specs/i });
     expect(link).toHaveAttribute('href', '/compare');
+  });
+
+  describe('Guides section', () => {
+    afterEach(() => {
+      delete (window as { __DOCFY_GUIDES__?: unknown }).__DOCFY_GUIDES__;
+    });
+
+    it('renders no "Guides" nav when none are configured', () => {
+      renderSidebar([]);
+      expect(screen.queryByRole('navigation', { name: 'Guides' })).not.toBeInTheDocument();
+    });
+
+    it('lists each configured guide, linking to /guides/:slug', () => {
+      window.__DOCFY_GUIDES__ = [
+        { slug: 'getting-started', title: 'Getting Started', content: '# Hi' },
+        { slug: 'auth', title: 'Authentication', content: '# Auth' },
+      ];
+      renderSidebar([]);
+
+      const nav = screen.getByRole('navigation', { name: 'Guides' });
+      const link = within(nav).getByRole('link', { name: 'Getting Started' });
+      expect(link).toHaveAttribute('href', '/guides/getting-started');
+      expect(within(nav).getByRole('link', { name: 'Authentication' })).toHaveAttribute('href', '/guides/auth');
+    });
+
+    it('highlights the guide link matching the current route', () => {
+      window.__DOCFY_GUIDES__ = [{ slug: 'getting-started', title: 'Getting Started', content: '# Hi' }];
+      renderSidebar([], { initialPath: '/guides/getting-started' });
+
+      const link = screen.getByRole('link', { name: 'Getting Started' });
+      expect(link.className).toContain('bg-primary/10');
+    });
   });
 });

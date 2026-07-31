@@ -1,8 +1,9 @@
 import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { ChevronDown, GitCompare, Moon, Search, Sun, X } from 'lucide-react';
+import { BookOpen, ChevronDown, GitCompare, Moon, Search, Sun, X } from 'lucide-react';
 import type { TagGroup } from '../document-model/types';
 import { useThemeStore } from '../state/theme-store';
+import { getConfiguredGuides } from '../lib/guides';
 import { MethodBadge } from './MethodBadge';
 import { NestLogo } from './NestLogo';
 import { SpecSwitcher } from './SpecSwitcher';
@@ -35,6 +36,7 @@ export function Sidebar({ tagGroups, mobileOpen, onCloseMobile, onSearchOpen }: 
   const location = useLocation();
   const theme = useThemeStore((s) => s.theme);
   const toggleTheme = useThemeStore((s) => s.toggleTheme);
+  const guides = getConfiguredGuides();
 
   function toggle(tagName: string) {
     setCollapsed((prev) => {
@@ -113,6 +115,37 @@ export function Sidebar({ tagGroups, mobileOpen, onCloseMobile, onSearchOpen }: 
             />
           </button>
         </div>
+
+        {guides.length > 0 && (
+          <nav aria-label="Guides" className="px-3 pb-2">
+            <ul className="flex flex-col gap-0.5">
+              {guides.map((guide) => {
+                const href = `/guides/${encodeURIComponent(guide.slug)}`;
+                const isActive = location.pathname === href;
+                return (
+                  <li key={guide.slug}>
+                    <Link
+                      to={href}
+                      onClick={onCloseMobile}
+                      className={cn(
+                        'relative flex w-full items-center gap-2 rounded-md px-3 py-1.5 text-[13px] transition-all duration-200 hover:translate-x-0.5',
+                        isActive
+                          ? 'bg-primary/10 font-semibold text-foreground'
+                          : 'text-muted-foreground hover:bg-muted hover:text-foreground',
+                      )}
+                    >
+                      {isActive && (
+                        <span aria-hidden="true" className="absolute inset-y-1.5 left-0 w-0.5 rounded-r bg-primary" />
+                      )}
+                      <BookOpen className="size-3.5 shrink-0" />
+                      <span className="truncate text-left">{guide.title}</span>
+                    </Link>
+                  </li>
+                );
+              })}
+            </ul>
+          </nav>
+        )}
 
         <nav aria-label="Endpoints" className="themed-scroll flex-1 overflow-y-auto px-3 pb-3">
           {tagGroups.map((group) => {

@@ -57,7 +57,14 @@ describe('buildCurlCommand()', () => {
       security: [{ bearerAuth: [] }],
     });
     const bearerScheme: Record<string, SecuritySchemeInfo> = {
-      bearerAuth: { type: 'http', scheme: 'bearer', bearerFormat: 'JWT', in: undefined, name: undefined, description: undefined },
+      bearerAuth: {
+        type: 'http',
+        scheme: 'bearer',
+        bearerFormat: 'JWT',
+        in: undefined,
+        name: undefined,
+        description: undefined,
+      },
     };
     const curl = buildCurlCommand(endpoint, {
       baseUrl: 'http://localhost:3000',
