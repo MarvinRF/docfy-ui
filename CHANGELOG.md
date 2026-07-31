@@ -1,3 +1,10 @@
+# [0.7.0](https://github.com/MarvinRF/docfy-ui/compare/v0.6.0...v0.7.0) (2026-07-31)
+
+
+### Features
+
+* add narrative markdown guide pages, listed in the sidebar ([c2203d0](https://github.com/MarvinRF/docfy-ui/commit/c2203d01282d5dfa6af83c5ac8b3c187046e878a))
+
 # [0.6.0](https://github.com/MarvinRF/docfy-ui/compare/v0.5.1...v0.6.0) (2026-07-31)
 
 
