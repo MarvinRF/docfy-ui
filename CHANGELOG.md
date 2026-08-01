@@ -1,3 +1,10 @@
+# [0.8.0](https://github.com/MarvinRF/docfy-ui/compare/v0.7.0...v0.8.0) (2026-08-01)
+
+
+### Features
+
+* **guides:** embed live Try it out via docfy-try fenced blocks ([ce44d67](https://github.com/MarvinRF/docfy-ui/commit/ce44d67e4733d3f659ebf33243611633ceb75e8f))
+
 # [0.7.0](https://github.com/MarvinRF/docfy-ui/compare/v0.6.0...v0.7.0) (2026-07-31)
 
 
