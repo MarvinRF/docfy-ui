@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { describe, it, expect } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
 import { ResponsesSection } from './ResponsesSection';
 import type { ResponseInfo } from '../document-model/types';
 
@@ -42,5 +42,29 @@ describe('<ResponsesSection />', () => {
     const bodies = container.querySelectorAll('.grid');
     expect(bodies[0]?.className).toContain('grid-rows-[1fr]');
     expect(bodies[1]?.className).toContain('grid-rows-[0fr]');
+  });
+
+  it('forwards activeTarget only to the response card whose scope matches', () => {
+    const responses: ResponseInfo[] = [
+      {
+        status: '200',
+        description: 'OK',
+        contentType: 'application/json',
+        schema: {
+          type: 'object',
+          properties: { address: { type: 'object', properties: { city: { type: 'string' } } } },
+        },
+      },
+      { status: '404', description: 'Not found', contentType: undefined, schema: undefined },
+    ];
+    render(
+      <ResponsesSection responses={responses} activeTarget={{ scope: 'response-200', path: ['address', 'city'] }} />,
+    );
+
+    const card200 = screen.getByText('200').closest('div.overflow-hidden') as HTMLElement;
+    expect(within(card200).getByRole('tab', { name: 'Schema' })).toHaveAttribute('data-state', 'active');
+
+    const card404 = screen.getByText('404').closest('div.overflow-hidden') as HTMLElement;
+    expect(within(card404).getByRole('tab', { name: 'Example' })).toHaveAttribute('data-state', 'active');
   });
 });

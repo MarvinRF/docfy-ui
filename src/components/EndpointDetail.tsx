@@ -1,5 +1,7 @@
+import { useLocation } from 'react-router-dom';
 import type { Endpoint, SecuritySchemeInfo } from '../document-model/types';
 import { capDepth } from '../document-model/cap-depth';
+import { parseSchemaAnchorHash } from '../document-model/schema-anchor';
 import { operationToAiText } from '../transformers/copy-for-ai';
 import { endpointKeyFor } from '../state/try-it-store';
 import { OperationHeader } from './OperationHeader';
@@ -28,6 +30,11 @@ export function EndpointDetail({ endpoint, baseUrl, securitySchemes = {}, server
   const openApiJson = JSON.stringify(capDepth(endpoint), null, 2);
   const aiText = operationToAiText(endpoint);
   const endpointKey = endpointKeyFor(endpoint);
+  // Deep-link into a nested schema property, e.g. `#response-200/address/city`
+  // — parsed once per navigation and forwarded down to whichever section
+  // (request body or a specific response) the scope targets.
+  const { hash } = useLocation();
+  const activeTarget = parseSchemaAnchorHash(hash) ?? undefined;
   // `window.location.href` is exactly this endpoint's canonical URL — this
   // component only ever renders from EndpointRoute, which already resolved
   // the current route to this exact endpoint, basename (window.__DOCFY_BASE_PATH__)
@@ -55,9 +62,9 @@ export function EndpointDetail({ endpoint, baseUrl, securitySchemes = {}, server
             <ParametersSection parameters={endpoint.parameters} />
           </div>
 
-          <RequestBodySection requestBody={endpoint.requestBody} />
+          <RequestBodySection requestBody={endpoint.requestBody} activeTarget={activeTarget} />
 
-          <ResponsesSection responses={endpoint.responses} />
+          <ResponsesSection responses={endpoint.responses} activeTarget={activeTarget} />
         </div>
 
         <aside className="hidden w-[500px] shrink-0 xl:block">

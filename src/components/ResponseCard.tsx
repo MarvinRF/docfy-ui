@@ -2,12 +2,18 @@ import { useState } from 'react';
 import { ChevronRight } from 'lucide-react';
 import type { ResponseInfo } from '../document-model/types';
 import { STATUS_TEXT, buildSchemaExample } from '../document-model/example';
+import { schemaToTreeNodes } from '../document-model/schema-tree';
+import type { SchemaAnchor } from '../document-model/schema-anchor';
 import { CodeBlock } from './CodeBlock';
+import { SchemaTree } from './SchemaTree';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
 import { cn } from '../lib/utils';
 
 export interface ResponseCardProps {
   response: ResponseInfo;
   defaultOpen?: boolean;
+  /** Deep-link target from the URL hash, if it points into this response's schema. */
+  activeTarget?: SchemaAnchor;
 }
 
 function statusClasses(status: string): string {
@@ -18,15 +24,21 @@ function statusClasses(status: string): string {
 }
 
 /**
- * Collapsible response row — status pill, label, JSON body — mirrors the
- * reference's `ResponseRow` exactly: chevron rotates open, body expands via
- * a `grid-template-rows` transition, body rendered through `CodeBlock`.
+ * Collapsible response row — status pill, label, JSON body/schema tree —
+ * mirrors the reference's `ResponseRow` exactly: chevron rotates open, body
+ * expands via a `grid-template-rows` transition. Body has two views: the
+ * flattened JSON example (`Example`, `CodeBlock`) and a navigable property
+ * tree (`Schema`, `SchemaTree`) — a deep-link hash targeting this response
+ * forces both the row open and the Schema tab active.
  */
-export function ResponseCard({ response, defaultOpen }: ResponseCardProps) {
-  const [open, setOpen] = useState(!!defaultOpen);
+export function ResponseCard({ response, defaultOpen, activeTarget }: ResponseCardProps) {
+  const scope = `response-${response.status}`;
+  const targetsThis = activeTarget?.scope === scope;
+  const [open, setOpen] = useState(!!defaultOpen || targetsThis);
   const label = response.description || STATUS_TEXT[response.status];
   const example = buildSchemaExample(response.schema);
   const code = example ? example.json : '// No content';
+  const treeNodes = schemaToTreeNodes(response.schema);
 
   return (
     <div className="overflow-hidden rounded-xl border border-border bg-surface transition-colors hover:border-border-strong">
@@ -56,7 +68,22 @@ export function ResponseCard({ response, defaultOpen }: ResponseCardProps) {
       >
         <div className="overflow-hidden">
           <div className="px-4 pb-4">
-            <CodeBlock code={code} language="json" variant="inline" showCopy />
+            <Tabs defaultValue={targetsThis ? 'schema' : 'example'}>
+              <TabsList>
+                <TabsTrigger value="example">Example</TabsTrigger>
+                <TabsTrigger value="schema">Schema</TabsTrigger>
+              </TabsList>
+              <TabsContent value="example">
+                <CodeBlock code={code} language="json" variant="inline" showCopy />
+              </TabsContent>
+              <TabsContent value="schema">
+                <SchemaTree
+                  nodes={treeNodes}
+                  idScope={scope}
+                  activePath={targetsThis ? activeTarget.path : undefined}
+                />
+              </TabsContent>
+            </Tabs>
           </div>
         </div>
       </div>

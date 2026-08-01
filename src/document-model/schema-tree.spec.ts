@@ -13,8 +13,8 @@ describe('schemaToTreeNodes()', () => {
       properties: { id: { type: 'string' }, age: { type: 'integer' } },
     });
     expect(nodes).toEqual([
-      { name: 'id', type: 'string', required: false, nullable: false },
-      { name: 'age', type: 'integer', required: false, nullable: false },
+      { name: 'id', path: ['id'], type: 'string', required: false, nullable: false },
+      { name: 'age', path: ['age'], type: 'integer', required: false, nullable: false },
     ]);
   });
 
@@ -53,8 +53,10 @@ describe('schemaToTreeNodes()', () => {
         },
       },
     });
-    expect(nodes[0]).toMatchObject({ name: 'address', type: 'object' });
-    expect(nodes[0].children).toEqual([{ name: 'zip', type: 'string', required: false, nullable: false }]);
+    expect(nodes[0]).toMatchObject({ name: 'address', path: ['address'], type: 'object' });
+    expect(nodes[0].children).toEqual([
+      { name: 'zip', path: ['address', 'zip'], type: 'string', required: false, nullable: false },
+    ]);
   });
 
   it('appends [] to the name for arrays and recurses into object items', () => {
@@ -68,10 +70,11 @@ describe('schemaToTreeNodes()', () => {
       },
     });
     expect(nodes[0].name).toBe('customers[]');
+    expect(nodes[0].path).toEqual(['customers']);
     expect(nodes[0].type).toBe('array');
     expect(nodes[0].children).toEqual([
-      { name: 'id', type: 'string', required: false, nullable: false },
-      { name: 'name', type: 'string', required: false, nullable: false },
+      { name: 'id', path: ['customers', 'id'], type: 'string', required: false, nullable: false },
+      { name: 'name', path: ['customers', 'name'], type: 'string', required: false, nullable: false },
     ]);
   });
 
@@ -105,10 +108,10 @@ describe('schemaToTreeNodes()', () => {
         },
       },
     });
-    expect(nodes[0]).toMatchObject({ name: 'owner', type: 'object' });
+    expect(nodes[0]).toMatchObject({ name: 'owner', path: ['owner'], type: 'object' });
     expect(nodes[0].children).toEqual([
-      { name: 'id', type: 'string', required: false, nullable: false },
-      { name: 'name', type: 'string', required: false, nullable: false },
+      { name: 'id', path: ['owner', 'id'], type: 'string', required: false, nullable: false },
+      { name: 'name', path: ['owner', 'name'], type: 'string', required: false, nullable: false },
     ]);
   });
 
@@ -133,6 +136,35 @@ describe('schemaToTreeNodes()', () => {
     expect(nodes[0].name).toBe('data');
     const dataChildren = nodes[0].children!;
     expect(dataChildren.map((n) => n.name)).toEqual(['customers[]', 'message', 'success']);
+  });
+
+  it('builds a stable path from raw property keys, independent of the [] display suffix', () => {
+    const nodes = schemaToTreeNodes({
+      type: 'object',
+      properties: {
+        data: {
+          type: 'object',
+          properties: {
+            customers: {
+              type: 'array',
+              items: {
+                type: 'object',
+                properties: { address: { type: 'object', properties: { city: { type: 'string' } } } },
+              },
+            },
+          },
+        },
+      },
+    });
+
+    const dataNode = nodes[0];
+    expect(dataNode.path).toEqual(['data']);
+    const customersNode = dataNode.children!.find((n) => n.name === 'customers[]')!;
+    expect(customersNode.path).toEqual(['data', 'customers']);
+    const addressNode = customersNode.children!.find((n) => n.name === 'address')!;
+    expect(addressNode.path).toEqual(['data', 'customers', 'address']);
+    const cityNode = addressNode.children!.find((n) => n.name === 'city')!;
+    expect(cityNode.path).toEqual(['data', 'customers', 'address', 'city']);
   });
 
   describe('circular schemas (recursive DTOs)', () => {
@@ -201,7 +233,7 @@ describe('schemaToTreeNodes()', () => {
       expect(nodes.find((n) => n.name === 'createdBy')!.circular).toBeUndefined();
       expect(nodes.find((n) => n.name === 'updatedBy')!.circular).toBeUndefined();
       expect(nodes.find((n) => n.name === 'createdBy')!.children).toEqual([
-        { name: 'name', type: 'string', required: false, nullable: false },
+        { name: 'name', path: ['createdBy', 'name'], type: 'string', required: false, nullable: false },
       ]);
     });
 

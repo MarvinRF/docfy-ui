@@ -24,6 +24,7 @@ AI-first OpenAPI documentation UI, a companion project to [nestjs-docfy](https:/
 - [Configuration](#configuration)
 - [Copy for AI](#copy-for-ai)
 - [Try it out](#try-it-out)
+- [Deep-linking into a schema](#deep-linking-into-a-schema)
 - [Guides](#guides)
 - [Document Model](#document-model)
 - [Theming](#theming)
@@ -89,7 +90,7 @@ POST /users
 - **Compare specs**: diff two OpenAPI documents and flag breaking vs. informational changes (new/removed endpoints, newly-required params, removed response codes).
 - **Multi-spec switcher**: browse more than one service's documentation from a single deployed instance, without leaving the UI.
 - **Guides**: narrative markdown pages (onboarding, tutorials) rendered alongside the generated API reference, listed in the sidebar — see [Guides](#guides).
-- **Two-column endpoint view**: documentation on the left (parameters, responses, navigable schema tree), code snippets (curl, JavaScript fetch, Axios, Python, PHP) on the right.
+- **Two-column endpoint view**: documentation on the left (parameters, responses, navigable schema tree), code snippets (curl, JavaScript fetch, Axios, Python, PHP) on the right. Every request body / response has an **Example** and a **Schema** tab; deep-link straight into a nested property with a URL hash (e.g. `#response-200/address/city`) — see [Deep-linking into a schema](#deep-linking-into-a-schema).
 - **Real-time search**: filters the sidebar by path/summary/operationId on every keystroke, no debounce, no Enter key.
 - **Dark/light theme**: token-driven, switches instantly with no page reload and no flash on first paint.
 - **Zero backend coupling**: fetches a plain OpenAPI 3.0/3.1 JSON document client-side; works with any server that exposes one, not just NestJS.
@@ -173,6 +174,20 @@ Every endpoint's request panel has a **Code / Try it out** mode switch, next to 
 - **CORS**: by default this is a direct `fetch()` from the browser to the target, so it's subject to the target API's own CORS policy — same constraint as [Configuration](#configuration) above. When `nestjs-docfy`'s `DocfyUiModule.setup()` is configured with `openApiDocument` (see [its README](https://github.com/MarvinRF/nest-docfy#docfyuimodulesetupmountpath-app-options)), `docfy-ui` detects the injected `window.__DOCFY_PROXY_PATH__` and routes the request through a same-origin server-side proxy instead, sidestepping CORS entirely for whatever origins the OpenAPI document declares in `servers[]`.
 
 Out of scope, deliberately: request history, multiple named environments, a full OAuth2 authorization-code/PKCE flow, and cookie-based auth (can't be set reliably cross-site from the browser).
+
+## Deep-linking into a schema
+
+Every request body and response has an **Example** tab (the type-token JSON payload) and a **Schema** tab (`SchemaTree` — the navigable, expandable/collapsible property tree, `src/components/SchemaTree.tsx`). A URL hash on an endpoint page points straight at a nested property in one of them:
+
+```text
+/{tag}/{operationId}#response-200/address/city
+/{tag}/{operationId}#request-body/items/sku
+```
+
+- `scope` is `response-<status>` or `request-body`; the rest of the hash is the property-key chain from the schema root, one segment per level (URL-encoded).
+- Opening a URL with a matching hash auto-opens the right response card (or the request body section), switches it to the **Schema** tab, expands every ancestor of the target property, and scrolls to it with a brief highlight.
+- Built from `schemaToTreeNodes()`'s `path: string[]` on each `SchemaTreeNode` (the raw property-key chain, independent of the `[]` display suffix used for arrays) and the pure helpers in `src/document-model/schema-anchor.ts` (`buildSchemaAnchorHash`/`parseSchemaAnchorHash`/`buildSchemaAnchorId`).
+- Scoped to _consuming_ a hash that's already in the URL — there's no "copy link" button yet to generate one from the UI.
 
 ## Guides
 

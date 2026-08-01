@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 import { describe, it, expect } from 'vitest';
 import { render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { RequestBodySection } from './RequestBodySection';
 
 describe('<RequestBodySection />', () => {
@@ -38,5 +39,47 @@ describe('<RequestBodySection />', () => {
       />,
     );
     expect(screen.queryByText('required')).not.toBeInTheDocument();
+  });
+
+  describe('Example / Schema tabs', () => {
+    const requestBody = {
+      required: true,
+      contentType: 'application/json',
+      schema: {
+        type: 'object' as const,
+        properties: { address: { type: 'object', properties: { city: { type: 'string' } } } },
+      },
+    };
+
+    it('defaults to the Example tab, switches to Schema on click', async () => {
+      const user = userEvent.setup();
+      render(<RequestBodySection requestBody={requestBody} />);
+
+      expect(screen.getByRole('tab', { name: 'Example' })).toHaveAttribute('data-state', 'active');
+      await user.click(screen.getByRole('tab', { name: 'Schema' }));
+      expect(screen.getByText('address')).toBeInTheDocument();
+    });
+
+    it('when activeTarget scopes to request-body, activates the Schema tab expanded to the target', () => {
+      render(
+        <RequestBodySection
+          requestBody={requestBody}
+          activeTarget={{ scope: 'request-body', path: ['address', 'city'] }}
+        />,
+      );
+
+      expect(screen.getByRole('tab', { name: 'Schema' })).toHaveAttribute('data-state', 'active');
+      expect(screen.getByText('city')).toBeInTheDocument();
+    });
+
+    it('ignores an activeTarget scoped to a response instead of the request body', () => {
+      render(
+        <RequestBodySection
+          requestBody={requestBody}
+          activeTarget={{ scope: 'response-200', path: ['address', 'city'] }}
+        />,
+      );
+      expect(screen.getByRole('tab', { name: 'Example' })).toHaveAttribute('data-state', 'active');
+    });
   });
 });

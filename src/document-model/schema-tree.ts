@@ -4,6 +4,8 @@ import { resolveUnion } from './example';
 export interface SchemaTreeNode {
   /** Property name, or `name[]` for arrays. */
   name: string;
+  /** Raw property keys from the root to this node (no `[]` suffix) — stable identity for deep-linking, independent of `name`'s display formatting. */
+  path: string[];
   type: string;
   required: boolean;
   nullable: boolean;
@@ -39,9 +41,11 @@ function buildNode(
   required: boolean,
   depth: number,
   ancestors: Set<JSONSchemaLike>,
+  parentPath: string[],
 ): SchemaTreeNode {
+  const path = [...parentPath, name];
   const { schema } = resolveUnion(rawSchema);
-  if (!schema) return { name, type: 'unknown', required, nullable: false };
+  if (!schema) return { name, path, type: 'unknown', required, nullable: false };
 
   const { type, nullable } = resolveType(schema);
 
@@ -50,30 +54,30 @@ function buildNode(
     const itemIsObject = Boolean(itemSchema && (itemSchema.type === 'object' || itemSchema.properties));
 
     if (!itemIsObject) {
-      return { name: `${name}[]`, type: 'array', required, nullable };
+      return { name: `${name}[]`, path, type: 'array', required, nullable };
     }
     if (ancestors.has(itemSchema!)) {
-      return { name: `${name}[]`, type: 'array', required, nullable, circular: true };
+      return { name: `${name}[]`, path, type: 'array', required, nullable, circular: true };
     }
 
     ancestors.add(itemSchema!);
-    const children = schemaToTreeNodes(itemSchema, depth + 1, ancestors);
+    const children = schemaToTreeNodes(itemSchema, depth + 1, ancestors, path);
     ancestors.delete(itemSchema!);
-    return { name: `${name}[]`, type: 'array', required, nullable, children };
+    return { name: `${name}[]`, path, type: 'array', required, nullable, children };
   }
 
   if (type === 'object') {
     if (ancestors.has(schema)) {
-      return { name, type: 'object', required, nullable, circular: true };
+      return { name, path, type: 'object', required, nullable, circular: true };
     }
 
     ancestors.add(schema);
-    const children = schemaToTreeNodes(schema, depth + 1, ancestors);
+    const children = schemaToTreeNodes(schema, depth + 1, ancestors, path);
     ancestors.delete(schema);
-    return { name, type: 'object', required, nullable, children };
+    return { name, path, type: 'object', required, nullable, children };
   }
 
-  return { name, type, required, nullable };
+  return { name, path, type, required, nullable };
 }
 
 /**
@@ -98,6 +102,7 @@ export function schemaToTreeNodes(
   schema: JSONSchemaLike | undefined,
   depth = 0,
   ancestors: Set<JSONSchemaLike> = new Set(),
+  parentPath: string[] = [],
 ): SchemaTreeNode[] {
   if (!schema || depth > MAX_DEPTH) return [];
 
@@ -108,6 +113,6 @@ export function schemaToTreeNodes(
   const properties = (resolved.properties as Record<string, JSONSchemaLike>) ?? {};
 
   return Object.entries(properties).map(([name, propSchema]) =>
-    buildNode(name, propSchema, required.has(name), depth, ancestors),
+    buildNode(name, propSchema, required.has(name), depth, ancestors, parentPath),
   );
 }
