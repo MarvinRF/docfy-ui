@@ -1,3 +1,10 @@
+# [0.9.0](https://github.com/MarvinRF/docfy-ui/compare/v0.8.0...v0.9.0) (2026-08-01)
+
+
+### Features
+
+* **schema:** integrate SchemaTree as a Schema tab, add deep-linking via URL hash ([af79570](https://github.com/MarvinRF/docfy-ui/commit/af79570963b84d2958980c97488a19db106ca465))
+
 # [0.8.0](https://github.com/MarvinRF/docfy-ui/compare/v0.7.0...v0.8.0) (2026-08-01)
 
 
