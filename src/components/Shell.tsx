@@ -68,7 +68,17 @@ export function Shell({ tagGroups, specUrl, securitySchemes = {}, servers = [] }
             className="dot-grid pointer-events-none absolute inset-x-0 top-0 -z-10 h-72 opacity-50 mask-[linear-gradient(to_bottom,black,transparent)]"
           />
           <Routes>
-            <Route path="/guides/:slug" element={<GuidePage />} />
+            <Route
+              path="/guides/:slug"
+              element={
+                <GuidePage
+                  tagGroups={tagGroups}
+                  baseUrl={typeof window !== 'undefined' ? window.location.origin : ''}
+                  securitySchemes={securitySchemes}
+                  servers={servers}
+                />
+              }
+            />
             <Route
               path="/:tag/:operationId"
               element={<EndpointRoute tagGroups={tagGroups} securitySchemes={securitySchemes} servers={servers} />}

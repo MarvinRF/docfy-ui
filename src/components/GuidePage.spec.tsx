@@ -2,16 +2,33 @@
 import { describe, it, expect, afterEach } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
-import { GuidePage } from './GuidePage';
+import { GuidePage, type GuidePageProps } from './GuidePage';
+import type { Endpoint, TagGroup } from '../document-model/types';
 
-function renderAt(path: string) {
+function renderAt(path: string, props: GuidePageProps = {}) {
   return render(
     <MemoryRouter initialEntries={[path]}>
       <Routes>
-        <Route path="/guides/:slug" element={<GuidePage />} />
+        <Route path="/guides/:slug" element={<GuidePage {...props} />} />
       </Routes>
     </MemoryRouter>,
   );
+}
+
+function makeEndpoint(overrides: Partial<Endpoint> = {}): Endpoint {
+  return {
+    method: 'POST',
+    path: '/auth/login',
+    operationId: 'login',
+    summary: 'Log in',
+    description: '',
+    tags: ['auth'],
+    parameters: [],
+    requestBody: undefined,
+    responses: [],
+    security: [],
+    ...overrides,
+  };
 }
 
 describe('<GuidePage />', () => {
@@ -63,5 +80,28 @@ describe('<GuidePage />', () => {
 
     const code = screen.getByText('npm install');
     expect(code.tagName).toBe('CODE');
+  });
+
+  it('renders an embedded RequestPanel for a docfy-try block matching a real endpoint', () => {
+    window.__DOCFY_GUIDES__ = [{ slug: 'try-guide', title: 'Try', content: '```docfy-try\nPOST /auth/login\n```' }];
+    const tagGroups: TagGroup[] = [{ name: 'auth', description: undefined, endpoints: [makeEndpoint()] }];
+    renderAt('/guides/try-guide', { tagGroups, baseUrl: 'https://api.example.com' });
+
+    expect(screen.getByTestId('request-panel-header')).toBeInTheDocument();
+    expect(screen.getByText('/auth/login')).toBeInTheDocument();
+  });
+
+  it('shows an inline error when a docfy-try block matches no endpoint in the spec', () => {
+    window.__DOCFY_GUIDES__ = [{ slug: 'try-missing', title: 'Try', content: '```docfy-try\nDELETE /nope\n```' }];
+    renderAt('/guides/try-missing', { tagGroups: [] });
+
+    expect(screen.getByText(/no endpoint matches/)).toBeInTheDocument();
+  });
+
+  it('shows an inline error when a docfy-try block is malformed', () => {
+    window.__DOCFY_GUIDES__ = [{ slug: 'try-bad', title: 'Try', content: '```docfy-try\nnot a request line\n```' }];
+    renderAt('/guides/try-bad');
+
+    expect(screen.getByText(/Invalid docfy-try block/)).toBeInTheDocument();
   });
 });

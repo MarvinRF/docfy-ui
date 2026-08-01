@@ -192,6 +192,18 @@ DocfyUiModule.setup('/docs', app, {
 
 Rendered via [`react-markdown`](https://github.com/remarkjs/react-markdown) + [`remark-gfm`](https://github.com/remarkjs/remark-gfm) (tables, strikethrough, task lists) — no `@tailwindcss/typography` plugin, element styles are hand-mapped to this app's own design tokens instead. Fenced code blocks render through the same `CodeBlock` component used everywhere else (consistent styling, no second syntax highlighter). No guides configured → the sidebar section and `/guides/*` routes simply don't exist, zero visual change.
 
+### Embedded Try it out (`docfy-try` blocks)
+
+A guide can embed a live, runnable request for any endpoint in the current spec — not just a link to its page. Use a fenced code block with the `docfy-try` language tag, containing a single `METHOD /path` line matching an endpoint exactly (same path template as the OpenAPI doc, e.g. `/users/{id}`):
+
+````markdown
+```docfy-try
+POST /auth/login
+```
+````
+
+Renders the same `RequestPanel` (Code/Try it out tabs, real auth, real request execution) used on the endpoint's own page, inline in the guide. No fuzzy matching: a typo'd method or path renders a small inline error instead of guessing, so broken references are obvious while writing the guide rather than failing silently.
+
 ## Document Model
 
 Before anything reaches a component, the raw OpenAPI document is normalized into an in-memory model (`tagGroups → endpoints`), implemented as pure, independently tested TypeScript with no React dependency:
