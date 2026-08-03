@@ -187,7 +187,7 @@ Every request body and response has an **Example** tab (the type-token JSON payl
 - `scope` is `response-<status>` or `request-body`; the rest of the hash is the property-key chain from the schema root, one segment per level (URL-encoded).
 - Opening a URL with a matching hash auto-opens the right response card (or the request body section), switches it to the **Schema** tab, expands every ancestor of the target property, and scrolls to it with a brief highlight.
 - Built from `schemaToTreeNodes()`'s `path: string[]` on each `SchemaTreeNode` (the raw property-key chain, independent of the `[]` display suffix used for arrays) and the pure helpers in `src/document-model/schema-anchor.ts` (`buildSchemaAnchorHash`/`parseSchemaAnchorHash`/`buildSchemaAnchorId`).
-- Scoped to _consuming_ a hash that's already in the URL — there's no "copy link" button yet to generate one from the UI.
+- Every row in the Schema tree also has a hover "copy link" button (`SchemaTree.tsx`) that copies the absolute URL — origin + path + the hash above — for that exact property, ready to paste into Slack/a PR comment/an agent prompt.
 
 ## Guides
 

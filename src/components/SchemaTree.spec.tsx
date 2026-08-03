@@ -147,4 +147,50 @@ describe('<SchemaTree />', () => {
       expect(screen.queryByText('zip')).not.toBeInTheDocument();
     });
   });
+
+  describe('copy-link button', () => {
+    function deepNodes() {
+      return schemaToTreeNodes({
+        type: 'object',
+        properties: {
+          address: {
+            type: 'object',
+            properties: { detail: { type: 'object', properties: { city: { type: 'string' } } } },
+          },
+        },
+      });
+    }
+
+    it('copies the absolute deep-link URL for the clicked node', async () => {
+      // userEvent.setup() installs its own clipboard stub on navigator.clipboard —
+      // our mock must be defined AFTER setup(), or setup() clobbers it.
+      const user = userEvent.setup();
+      const writeText = vi.fn().mockResolvedValue(undefined);
+      Object.defineProperty(navigator, 'clipboard', { value: { writeText }, configurable: true });
+
+      const nodes = deepNodes();
+      render(<SchemaTree nodes={nodes} idScope="response-200" activePath={['address', 'detail', 'city']} />);
+
+      await user.click(screen.getByRole('button', { name: /copy link to city/i }));
+
+      expect(writeText).toHaveBeenCalledWith(
+        `${window.location.origin}${window.location.pathname}#response-200/address/detail/city`,
+      );
+    });
+
+    it('does not toggle expand/collapse when the copy-link button is clicked', async () => {
+      const user = userEvent.setup();
+      const writeText = vi.fn().mockResolvedValue(undefined);
+      Object.defineProperty(navigator, 'clipboard', { value: { writeText }, configurable: true });
+
+      const nodes = deepNodes();
+      render(<SchemaTree nodes={nodes} idScope="test" />);
+
+      // "detail" is one level below the always-expanded top level, so it
+      // starts collapsed — its child "city" isn't rendered yet.
+      expect(screen.queryByText('city')).not.toBeInTheDocument();
+      await user.click(screen.getByRole('button', { name: /copy link to detail/i }));
+      expect(screen.queryByText('city')).not.toBeInTheDocument();
+    });
+  });
 });

@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
+import { Check, Link2 } from 'lucide-react';
 import type { SchemaTreeNode } from '../document-model/schema-tree';
-import { buildSchemaAnchorId } from '../document-model/schema-anchor';
+import { buildSchemaAnchorHash, buildSchemaAnchorId } from '../document-model/schema-anchor';
+import { useCopyToClipboard } from '../hooks/use-copy-to-clipboard';
 import { cn } from '../lib/utils';
 
 export interface SchemaTreeProps {
@@ -17,6 +19,34 @@ function pathsEqual(a: string[], b: string[]): boolean {
 
 function isPrefixOf(prefix: string[], full: string[]): boolean {
   return prefix.length < full.length && prefix.every((seg, i) => seg === full[i]);
+}
+
+/**
+ * Hover-only "link" affordance on a schema row — copies the absolute deep
+ * link to this property (origin + pathname + `#scope/path`) to the
+ * clipboard, e.g. to paste into Slack. Mirrors header-anchor links on doc
+ * sites. Doesn't touch `window.location.hash` itself: this is a "grab a
+ * link to send elsewhere" action, not in-page navigation.
+ */
+function CopyLinkButton({ scope, path }: { scope: string; path: string[] }) {
+  const { copied, copy } = useCopyToClipboard();
+
+  return (
+    <button
+      type="button"
+      onClick={(e) => {
+        e.stopPropagation();
+        copy(`${window.location.origin}${window.location.pathname}${buildSchemaAnchorHash(scope, path)}`);
+      }}
+      aria-label={`Copy link to ${path[path.length - 1]}`}
+      className={cn(
+        'shrink-0 rounded p-0.5 text-muted-foreground opacity-0 transition-opacity hover:text-foreground group-hover:opacity-100',
+        copied && 'text-success opacity-100',
+      )}
+    >
+      {copied ? <Check size={12} /> : <Link2 size={12} />}
+    </button>
+  );
 }
 
 const TYPE_CLASSES: Record<string, string> = {
@@ -99,6 +129,7 @@ function TreeNode({
           <span className="rounded px-1 text-[10px] font-medium text-primary-foreground bg-primary">required</span>
         )}
         {node.nullable && <span className="text-xs text-muted-foreground">nullable</span>}
+        <CopyLinkButton scope={idScope} path={node.path} />
       </div>
 
       {hasChildren && expanded && (
