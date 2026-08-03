@@ -1,3 +1,10 @@
+# [0.10.0](https://github.com/MarvinRF/docfy-ui/compare/v0.9.0...v0.10.0) (2026-08-03)
+
+
+### Features
+
+* **schema:** add copy-link button to generate deep links from the UI ([c716b3a](https://github.com/MarvinRF/docfy-ui/commit/c716b3a3a2cf95ca8ca98de92683a68ca0289943))
+
 # [0.9.0](https://github.com/MarvinRF/docfy-ui/compare/v0.8.0...v0.9.0) (2026-08-01)
 
 
