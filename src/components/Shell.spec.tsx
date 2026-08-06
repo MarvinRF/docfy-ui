@@ -5,6 +5,7 @@ import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router-dom';
 import { Shell } from './Shell';
 import { useThemeStore } from '../state/theme-store';
+import { useNavigationStore } from '../state/navigation-store';
 import type { Endpoint, TagGroup } from '../document-model/types';
 
 function makeEndpoint(overrides: Partial<Endpoint> = {}): Endpoint {
@@ -44,6 +45,7 @@ describe('<Shell />', () => {
   beforeEach(() => {
     localStorage.clear();
     useThemeStore.setState({ theme: 'dark' });
+    useNavigationStore.setState({ favorites: {}, recent: {} });
   });
 
   it('shows the empty state at the root route', () => {

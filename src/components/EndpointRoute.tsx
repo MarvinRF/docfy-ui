@@ -1,5 +1,8 @@
+import { useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import type { SecuritySchemeInfo, TagGroup } from '../document-model/types';
+import { useSpecStore } from '../state/spec-store';
+import { navKeyFor, useNavigationStore } from '../state/navigation-store';
 import { EndpointDetail } from './EndpointDetail';
 
 export interface EndpointRouteProps {
@@ -13,6 +16,12 @@ export function EndpointRoute({ tagGroups, securitySchemes = {}, servers = [] }:
   const { tag, operationId } = useParams();
   const group = tagGroups.find((g) => g.name === tag);
   const endpoint = group?.endpoints.find((e) => (e.operationId ?? `${e.method}-${e.path}`) === operationId);
+  const specUrl = useSpecStore((s) => s.currentUrl);
+  const recordVisit = useNavigationStore((s) => s.recordVisit);
+
+  useEffect(() => {
+    if (tag && operationId) recordVisit(specUrl, navKeyFor(tag, operationId));
+  }, [specUrl, tag, operationId, recordVisit]);
 
   if (!endpoint) {
     return <p className="text-foreground">Endpoint not found.</p>;

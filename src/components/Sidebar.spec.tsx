@@ -4,6 +4,8 @@ import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router-dom';
 import { Sidebar } from './Sidebar';
+import { useNavigationStore } from '../state/navigation-store';
+import { useSpecStore } from '../state/spec-store';
 import type { Endpoint, TagGroup } from '../document-model/types';
 
 function makeEndpoint(overrides: Partial<Endpoint> = {}): Endpoint {
@@ -91,10 +93,10 @@ describe('<Sidebar />', () => {
 
     expect(screen.getByText('findAllUsers')).toBeInTheDocument();
 
-    await user.click(screen.getByRole('button', { name: /users/i }));
+    await user.click(screen.getByRole('button', { name: 'users' }));
     expect(screen.queryByText('findAllUsers')).not.toBeInTheDocument();
 
-    await user.click(screen.getByRole('button', { name: /users/i }));
+    await user.click(screen.getByRole('button', { name: 'users' }));
     expect(screen.getByText('findAllUsers')).toBeInTheDocument();
   });
 
@@ -163,9 +165,9 @@ describe('<Sidebar />', () => {
     const inactiveLink = screen.getByRole('link', { name: /findAllOrders/i });
 
     expect(activeLink.className).toContain('bg-primary/10');
-    expect(activeLink.querySelector('[aria-hidden="true"]')).not.toBeNull();
+    expect(activeLink.querySelector('[data-testid="active-indicator"]')).not.toBeNull();
     expect(inactiveLink.className).not.toContain('bg-primary/10');
-    expect(inactiveLink.querySelector('[aria-hidden="true"]')).toBeNull();
+    expect(inactiveLink.querySelector('[data-testid="active-indicator"]')).toBeNull();
   });
 
   it('links to /compare for the "Compare specs" entry', () => {
@@ -203,6 +205,58 @@ describe('<Sidebar />', () => {
 
       const link = screen.getByRole('link', { name: 'Getting Started' });
       expect(link.className).toContain('bg-primary/10');
+    });
+  });
+
+  describe('Favorites and recent', () => {
+    afterEach(() => {
+      useNavigationStore.setState({ favorites: {}, recent: {} });
+    });
+
+    it('renders no Favorites/Recent nav when nothing is starred or visited', () => {
+      renderSidebar([{ name: 'users', description: undefined, endpoints: [makeEndpoint()] }]);
+      expect(screen.queryByRole('navigation', { name: 'Favorites' })).not.toBeInTheDocument();
+      expect(screen.queryByRole('navigation', { name: 'Recently viewed' })).not.toBeInTheDocument();
+    });
+
+    it('stars an endpoint via the row toggle, adding it to Favorites, then unstars it', async () => {
+      const user = userEvent.setup();
+      const groups: TagGroup[] = [
+        { name: 'users', description: undefined, endpoints: [makeEndpoint({ operationId: 'findAllUsers' })] },
+      ];
+      renderSidebar(groups);
+
+      await user.click(screen.getByRole('button', { name: 'Add findAllUsers to favorites' }));
+
+      const favNav = screen.getByRole('navigation', { name: 'Favorites' });
+      expect(within(favNav).getByRole('link', { name: /findAllUsers/i })).toBeInTheDocument();
+
+      await user.click(within(favNav).getByRole('button', { name: 'Remove findAllUsers from favorites' }));
+      expect(screen.queryByRole('navigation', { name: 'Favorites' })).not.toBeInTheDocument();
+    });
+
+    it('lists recently visited endpoints, excluding ones already favorited', () => {
+      const groups: TagGroup[] = [
+        {
+          name: 'users',
+          description: undefined,
+          endpoints: [
+            makeEndpoint({ operationId: 'findAllUsers' }),
+            makeEndpoint({ operationId: 'createUser', path: '/users' }),
+          ],
+        },
+      ];
+      const specUrl = useSpecStore.getState().currentUrl;
+      useNavigationStore.setState({
+        favorites: { [specUrl]: ['users/createUser'] },
+        recent: { [specUrl]: ['users/createUser', 'users/findAllUsers'] },
+      });
+
+      renderSidebar(groups);
+
+      const recentNav = screen.getByRole('navigation', { name: 'Recently viewed' });
+      expect(within(recentNav).getByRole('link', { name: /findAllUsers/i })).toBeInTheDocument();
+      expect(within(recentNav).queryByRole('link', { name: /createUser/i })).not.toBeInTheDocument();
     });
   });
 });

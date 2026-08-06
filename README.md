@@ -25,6 +25,7 @@ AI-first OpenAPI documentation UI, a companion project to [nestjs-docfy](https:/
 - [Copy for AI](#copy-for-ai)
 - [Try it out](#try-it-out)
 - [Deep-linking into a schema](#deep-linking-into-a-schema)
+- [Favorites and recently viewed](#favorites-and-recently-viewed)
 - [Guides](#guides)
 - [Document Model](#document-model)
 - [Theming](#theming)
@@ -92,6 +93,7 @@ POST /users
 - **Guides**: narrative markdown pages (onboarding, tutorials) rendered alongside the generated API reference, listed in the sidebar — see [Guides](#guides).
 - **Two-column endpoint view**: documentation on the left (parameters, responses, navigable schema tree), code snippets (curl, JavaScript fetch, Axios, Python, PHP) on the right. Every request body / response has an **Example** and a **Schema** tab; deep-link straight into a nested property with a URL hash (e.g. `#response-200/address/city`) — see [Deep-linking into a schema](#deep-linking-into-a-schema).
 - **Real-time search**: filters the sidebar by path/summary/operationId on every keystroke, no debounce, no Enter key.
+- **Favorites and recently viewed**: star any endpoint to pin it in the sidebar, and the last 5 you opened show up in a "Recent" section automatically — both scoped per spec and persisted to `localStorage` — see [Favorites and recently viewed](#favorites-and-recently-viewed).
 - **Dark/light theme**: token-driven, switches instantly with no page reload and no flash on first paint.
 - **Zero backend coupling**: fetches a plain OpenAPI 3.0/3.1 JSON document client-side; works with any server that exposes one, not just NestJS.
 - **Mobile-responsive**: off-canvas sidebar drawer below the `lg` breakpoint, audited at 375/390/768px.
@@ -189,6 +191,15 @@ Every request body and response has an **Example** tab (the type-token JSON payl
 - Built from `schemaToTreeNodes()`'s `path: string[]` on each `SchemaTreeNode` (the raw property-key chain, independent of the `[]` display suffix used for arrays) and the pure helpers in `src/document-model/schema-anchor.ts` (`buildSchemaAnchorHash`/`parseSchemaAnchorHash`/`buildSchemaAnchorId`).
 - Every row in the Schema tree also has a hover "copy link" button (`SchemaTree.tsx`) that copies the absolute URL — origin + path + the hash above — for that exact property, ready to paste into Slack/a PR comment/an agent prompt.
 
+## Favorites and recently viewed
+
+The sidebar tracks endpoint usage per spec (keyed by the loaded spec URL, so switching specs via the multi-spec switcher doesn't mix unrelated APIs):
+
+- **Favorites** — hover any endpoint row (in the tag tree, or in Favorites/Recent themselves) to reveal a star toggle; starred endpoints get pinned in a "Favorites" section at the top of the sidebar, in the order you starred them.
+- **Recently viewed** — the last 5 distinct endpoints you opened, most-recent-first, shown in a "Recent" section below Favorites. An endpoint already in Favorites is left out of Recent to avoid showing it twice.
+
+Both persist to `localStorage` (`useNavigationStore`, `src/state/navigation-store.ts`) and survive a reload. Recording a visit happens automatically in `EndpointRoute` on navigation — no action needed beyond opening an endpoint.
+
 ## Guides
 
 Narrative markdown pages — onboarding, tutorials, anything that isn't "here's an endpoint" — rendered at `/guides/:slug` and listed in the sidebar above the endpoint tag tree. `docfy-ui` doesn't own the content; `nestjs-docfy`'s `DocfyUiModule.setup({ guides })` injects it (see [its README](https://github.com/MarvinRF/nest-docfy#docfyuimodulesetupmountpath-app-options)):
@@ -243,6 +254,7 @@ Dark/light theming is token-driven and reload-free:
 - **Browser-only by design**: the document model and "Copy for AI"/"Copy OpenAPI" transformers run entirely client-side; the UI has no server component beyond the static bundle.
 - **`@apidevtools/swagger-parser` over `@readme/openapi-parser`**: chosen for a smaller bundle, a working `browser` field, and equivalent OpenAPI 3.1 support (`src/__tests__/parser-spike.spec.ts` records this as a regression-protecting test). Its transitive dependency `@apidevtools/json-schema-ref-parser` calls `Buffer.isBuffer()` unconditionally, which throws in a real browser. Worked around with a minimal `buffer` polyfill imported first in `src/main.tsx` (`src/polyfills.ts`).
 - **Verified against real OpenAPI 3.0 and 3.1 documents** (`public/sample-spec.json`, `public/sample-spec-31.json`), exercising `oneOf`/`anyOf`, a no-`requestBody` endpoint, an endpoint with no declared error responses, an unconstrained schema, and a long multi-sentence description. Driven by Playwright against real Chrome, at desktop and mobile (375/390/768px) widths.
+- **Route-level code-splitting**: `GuidePage` and `ComparePage` are loaded via `React.lazy`, not bundled eagerly (`Shell.tsx`). Both pull real weight — `GuidePage` drags in `react-markdown`/`remark-gfm`, `ComparePage` the diff engine — and neither is where most sessions land first, unlike the endpoint detail view. A session that never opens a guide or the compare view skips that JS entirely.
 
 ## Scripts
 

@@ -1,8 +1,10 @@
 import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { BookOpen, ChevronDown, GitCompare, Moon, Search, Sun, X } from 'lucide-react';
-import type { TagGroup } from '../document-model/types';
+import { BookOpen, ChevronDown, Clock, GitCompare, Moon, Search, Star, Sun, X } from 'lucide-react';
+import type { Endpoint, TagGroup } from '../document-model/types';
 import { useThemeStore } from '../state/theme-store';
+import { useSpecStore } from '../state/spec-store';
+import { EMPTY_KEYS, navKeyFor, useNavigationStore } from '../state/navigation-store';
 import { getConfiguredGuides } from '../lib/guides';
 import { MethodBadge } from './MethodBadge';
 import { NestLogo } from './NestLogo';
@@ -26,6 +28,64 @@ function endpointTitle(endpoint: { path: string; operationId?: string; summary?:
   return endpoint.summary ?? endpoint.operationId ?? endpoint.path;
 }
 
+interface EndpointRowProps {
+  group: TagGroup;
+  endpoint: Endpoint;
+  isActive: boolean;
+  isFavorite: boolean;
+  onToggleFavorite: () => void;
+  onCloseMobile: () => void;
+}
+
+/** One endpoint link — used by the tag tree, and by the Favorites/Recent sections above it. */
+function EndpointRow({ group, endpoint, isActive, isFavorite, onToggleFavorite, onCloseMobile }: EndpointRowProps) {
+  const id = endpointId(endpoint);
+  const href = `/${encodeURIComponent(group.name)}/${encodeURIComponent(id)}`;
+  const title = endpointTitle(endpoint);
+  return (
+    <li className="group/row">
+      <Link
+        to={href}
+        onClick={onCloseMobile}
+        className={cn(
+          'relative flex w-full items-center justify-between gap-1.5 rounded-md py-1.5 pr-1.5 pl-3 text-[13px] transition-all duration-200 hover:translate-x-0.5',
+          isActive
+            ? 'bg-primary/10 font-semibold text-foreground'
+            : 'text-muted-foreground hover:bg-muted hover:text-foreground',
+        )}
+      >
+        {isActive && (
+          <span
+            aria-hidden="true"
+            data-testid="active-indicator"
+            className="absolute inset-y-1.5 left-0 w-0.5 rounded-r bg-primary"
+          />
+        )}
+        <span className="truncate text-left">{title}</span>
+        <span className="flex shrink-0 items-center gap-1">
+          <MethodBadge method={endpoint.method} />
+          <button
+            type="button"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              onToggleFavorite();
+            }}
+            aria-label={isFavorite ? `Remove ${title} from favorites` : `Add ${title} to favorites`}
+            aria-pressed={isFavorite}
+            className={cn(
+              'rounded p-0.5 text-muted-foreground transition-opacity hover:text-foreground',
+              isFavorite ? 'opacity-100' : 'opacity-0 group-hover/row:opacity-100 focus-visible:opacity-100',
+            )}
+          >
+            <Star className={cn('size-3.5', isFavorite && 'fill-primary text-primary')} />
+          </button>
+        </span>
+      </Link>
+    </li>
+  );
+}
+
 /** Brand + search trigger + theme toggle + tag tree + footer — the whole left rail, mirroring the reference design's self-contained Sidebar. */
 export function Sidebar({ tagGroups, mobileOpen, onCloseMobile, onSearchOpen }: SidebarProps) {
   const [collapsed, setCollapsed] = useState<Set<string>>(new Set());
@@ -37,6 +97,26 @@ export function Sidebar({ tagGroups, mobileOpen, onCloseMobile, onSearchOpen }: 
   const theme = useThemeStore((s) => s.theme);
   const toggleTheme = useThemeStore((s) => s.toggleTheme);
   const guides = getConfiguredGuides();
+
+  const specUrl = useSpecStore((s) => s.currentUrl);
+  const favoritesBySpec = useNavigationStore((s) => s.favorites);
+  const recentBySpec = useNavigationStore((s) => s.recent);
+  const toggleFavorite = useNavigationStore((s) => s.toggleFavorite);
+  const isFavorite = useNavigationStore((s) => s.isFavorite);
+  const favoriteKeys = favoritesBySpec[specUrl] ?? EMPTY_KEYS;
+  const recentKeys = recentBySpec[specUrl] ?? EMPTY_KEYS;
+
+  const endpointByKey = new Map<string, { group: TagGroup; endpoint: Endpoint }>();
+  for (const group of tagGroups) {
+    for (const endpoint of group.endpoints) {
+      endpointByKey.set(navKeyFor(group.name, endpointId(endpoint)), { group, endpoint });
+    }
+  }
+  const favorites = favoriteKeys.map((key) => endpointByKey.get(key)).filter((v) => v !== undefined);
+  const recent = recentKeys
+    .map((key) => endpointByKey.get(key))
+    .filter((v) => v !== undefined)
+    .filter((v) => !favoriteKeys.includes(navKeyFor(v.group.name, endpointId(v.endpoint))));
 
   function toggle(tagName: string) {
     setCollapsed((prev) => {
@@ -116,6 +196,55 @@ export function Sidebar({ tagGroups, mobileOpen, onCloseMobile, onSearchOpen }: 
           </button>
         </div>
 
+        {favorites.length > 0 && (
+          <nav aria-label="Favorites" className="px-3 pb-2">
+            <p className="px-3 pb-1 text-[10.5px] font-semibold tracking-[0.14em] text-muted-foreground uppercase">
+              Favorites
+            </p>
+            <ul className="flex flex-col gap-0.5">
+              {favorites.map(({ group, endpoint }) => {
+                const href = `/${encodeURIComponent(group.name)}/${encodeURIComponent(endpointId(endpoint))}`;
+                return (
+                  <EndpointRow
+                    key={navKeyFor(group.name, endpointId(endpoint))}
+                    group={group}
+                    endpoint={endpoint}
+                    isActive={location.pathname === href}
+                    isFavorite={true}
+                    onToggleFavorite={() => toggleFavorite(specUrl, navKeyFor(group.name, endpointId(endpoint)))}
+                    onCloseMobile={onCloseMobile}
+                  />
+                );
+              })}
+            </ul>
+          </nav>
+        )}
+
+        {recent.length > 0 && (
+          <nav aria-label="Recently viewed" className="px-3 pb-2">
+            <p className="flex items-center gap-1 px-3 pb-1 text-[10.5px] font-semibold tracking-[0.14em] text-muted-foreground uppercase">
+              <Clock aria-hidden="true" className="size-3" />
+              Recent
+            </p>
+            <ul className="flex flex-col gap-0.5">
+              {recent.map(({ group, endpoint }) => {
+                const href = `/${encodeURIComponent(group.name)}/${encodeURIComponent(endpointId(endpoint))}`;
+                return (
+                  <EndpointRow
+                    key={navKeyFor(group.name, endpointId(endpoint))}
+                    group={group}
+                    endpoint={endpoint}
+                    isActive={location.pathname === href}
+                    isFavorite={false}
+                    onToggleFavorite={() => toggleFavorite(specUrl, navKeyFor(group.name, endpointId(endpoint)))}
+                    onCloseMobile={onCloseMobile}
+                  />
+                );
+              })}
+            </ul>
+          </nav>
+        )}
+
         {guides.length > 0 && (
           <nav aria-label="Guides" className="px-3 pb-2">
             <ul className="flex flex-col gap-0.5">
@@ -171,29 +300,17 @@ export function Sidebar({ tagGroups, mobileOpen, onCloseMobile, onSearchOpen }: 
                     {group.endpoints.map((endpoint) => {
                       const id = endpointId(endpoint);
                       const href = `/${encodeURIComponent(group.name)}/${encodeURIComponent(id)}`;
-                      const isActive = location.pathname === href;
+                      const key = navKeyFor(group.name, id);
                       return (
-                        <li key={`${group.name}-${endpoint.method}-${endpoint.path}`}>
-                          <Link
-                            to={href}
-                            onClick={onCloseMobile}
-                            className={cn(
-                              'relative flex w-full items-center justify-between gap-2 rounded-md px-3 py-1.5 text-[13px] transition-all duration-200 hover:translate-x-0.5',
-                              isActive
-                                ? 'bg-primary/10 font-semibold text-foreground'
-                                : 'text-muted-foreground hover:bg-muted hover:text-foreground',
-                            )}
-                          >
-                            {isActive && (
-                              <span
-                                aria-hidden="true"
-                                className="absolute inset-y-1.5 left-0 w-0.5 rounded-r bg-primary"
-                              />
-                            )}
-                            <span className="truncate text-left">{endpointTitle(endpoint)}</span>
-                            <MethodBadge method={endpoint.method} />
-                          </Link>
-                        </li>
+                        <EndpointRow
+                          key={key}
+                          group={group}
+                          endpoint={endpoint}
+                          isActive={location.pathname === href}
+                          isFavorite={isFavorite(specUrl, key)}
+                          onToggleFavorite={() => toggleFavorite(specUrl, key)}
+                          onCloseMobile={onCloseMobile}
+                        />
                       );
                     })}
                   </ul>
