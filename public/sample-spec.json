@@ -7,6 +7,10 @@
   },
   "tags": [
     {
+      "name": "auth",
+      "description": "Authentication operations"
+    },
+    {
       "name": "users",
       "description": "User operations"
     },
@@ -72,12 +76,54 @@
       }
     },
 
+    "/auth/login": {
+      "post": {
+        "operationId": "login",
+        "summary": "Log in",
+        "description": "Authenticates a user with email and password, returning a short-lived JWT access token. The returned token must be sent as a Bearer credential on every subsequent request to an endpoint that declares the `bearerAuth` security scheme.",
+        "tags": ["auth"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Authenticated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LoginResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Invalid email or password",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+
     "/users": {
       "get": {
         "operationId": "findAllUsers",
         "summary": "List users",
         "description": "Returns a paginated collection of users registered in the platform. This endpoint is heavily used by administrative dashboards, customer support tools, reporting systems, and internal workflows that need to browse large user datasets efficiently.",
         "tags": ["users"],
+        "security": [{ "bearerAuth": [] }],
         "parameters": [
           {
             "name": "page",
@@ -319,6 +365,7 @@
         "summary": "List products",
         "description": "Returns a paginated catalog of products available within the platform. Product records may represent either physical or digital goods and can contain metadata consumed by integrations and analytics systems.",
         "tags": ["products"],
+        "security": [{ "bearerAuth": [] }],
         "responses": {
           "200": {
             "description": "Products found",
@@ -453,6 +500,7 @@
         "summary": "List orders",
         "description": "Returns a paginated collection of customer orders used by operational dashboards, fulfillment systems, customer service workflows, and reporting tools.",
         "tags": ["orders"],
+        "security": [{ "bearerAuth": [] }],
         "responses": {
           "200": {
             "description": "Orders found",
@@ -652,7 +700,48 @@
   },
 
   "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "description": "JWT issued by POST /auth/login. Paste it via the sidebar's Authorize button, or use \"Try it out\" on /auth/login and click \"Use as bearerAuth token\" on the response."
+      }
+    },
     "schemas": {
+      "LoginRequest": {
+        "type": "object",
+        "required": ["email", "password"],
+        "properties": {
+          "email": {
+            "type": "string",
+            "format": "email",
+            "example": "ada@example.com"
+          },
+          "password": {
+            "type": "string",
+            "format": "password",
+            "example": "hunter2"
+          }
+        }
+      },
+
+      "LoginResponse": {
+        "type": "object",
+        "required": ["accessToken", "expiresIn"],
+        "properties": {
+          "accessToken": {
+            "type": "string",
+            "description": "JWT bearer token — send as `Authorization: Bearer <accessToken>` on subsequent requests."
+          },
+          "expiresIn": {
+            "type": "integer",
+            "description": "Token lifetime in seconds.",
+            "example": 3600
+          }
+        }
+      },
+
       "BaseEntity": {
         "type": "object",
         "required": ["id", "createdAt", "updatedAt"],
