@@ -6,7 +6,8 @@ import { MemoryRouter } from 'react-router-dom';
 import { Sidebar } from './Sidebar';
 import { useNavigationStore } from '../state/navigation-store';
 import { useSpecStore } from '../state/spec-store';
-import type { Endpoint, TagGroup } from '../document-model/types';
+import { useTryItStore } from '../state/try-it-store';
+import type { Endpoint, SecuritySchemeInfo, TagGroup } from '../document-model/types';
 
 function makeEndpoint(overrides: Partial<Endpoint> = {}): Endpoint {
   return {
@@ -31,12 +32,14 @@ function renderSidebar(
     onCloseMobile: () => void;
     onSearchOpen: () => void;
     initialPath: string;
+    securitySchemes: Record<string, SecuritySchemeInfo>;
   }> = {},
 ) {
   return render(
     <MemoryRouter initialEntries={[overrides.initialPath ?? '/']}>
       <Sidebar
         tagGroups={tagGroups}
+        securitySchemes={overrides.securitySchemes}
         mobileOpen={overrides.mobileOpen ?? false}
         onCloseMobile={overrides.onCloseMobile ?? (() => {})}
         onSearchOpen={overrides.onSearchOpen ?? (() => {})}
@@ -257,6 +260,49 @@ describe('<Sidebar />', () => {
       const recentNav = screen.getByRole('navigation', { name: 'Recently viewed' });
       expect(within(recentNav).getByRole('link', { name: /findAllUsers/i })).toBeInTheDocument();
       expect(within(recentNav).queryByRole('link', { name: /createUser/i })).not.toBeInTheDocument();
+    });
+
+    it('the "Clear" button empties the Recent section without touching Favorites', async () => {
+      const user = userEvent.setup();
+      const groups: TagGroup[] = [
+        { name: 'users', description: undefined, endpoints: [makeEndpoint({ operationId: 'findAllUsers' })] },
+      ];
+      const specUrl = useSpecStore.getState().currentUrl;
+      useNavigationStore.setState({ favorites: {}, recent: { [specUrl]: ['users/findAllUsers'] } });
+
+      renderSidebar(groups);
+      expect(screen.getByRole('navigation', { name: 'Recently viewed' })).toBeInTheDocument();
+
+      await user.click(screen.getByRole('button', { name: 'Clear' }));
+      expect(screen.queryByRole('navigation', { name: 'Recently viewed' })).not.toBeInTheDocument();
+    });
+  });
+
+  describe('Authorize', () => {
+    afterEach(() => {
+      useTryItStore.setState({ authValues: {}, requests: {} });
+    });
+
+    const BEARER: SecuritySchemeInfo = {
+      type: 'http',
+      scheme: 'bearer',
+      bearerFormat: 'JWT',
+      in: undefined,
+      name: undefined,
+      description: undefined,
+    };
+
+    it('renders no Authorize button when the spec declares no security scheme', () => {
+      renderSidebar([]);
+      expect(screen.queryByRole('button', { name: 'Authorize' })).not.toBeInTheDocument();
+    });
+
+    it('opens the Authorize dialog, listing every declared scheme', async () => {
+      const user = userEvent.setup();
+      renderSidebar([], { securitySchemes: { bearerAuth: BEARER } });
+
+      await user.click(screen.getByRole('button', { name: 'Authorize' }));
+      expect(screen.getByText(/bearerAuth/)).toBeInTheDocument();
     });
   });
 });

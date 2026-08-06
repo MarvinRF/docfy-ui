@@ -43,4 +43,24 @@ describe('useNavigationStore', () => {
     }
     expect(useNavigationStore.getState().recent[SPEC_A]).toEqual(['op-6', 'op-5', 'op-4', 'op-3', 'op-2']);
   });
+
+  it('clearRecent empties the recent list for that spec without touching favorites', () => {
+    useNavigationStore.getState().recordVisit(SPEC_A, 'users/findAllUsers');
+    useNavigationStore.getState().toggleFavorite(SPEC_A, 'users/findAllUsers');
+
+    useNavigationStore.getState().clearRecent(SPEC_A);
+
+    expect(useNavigationStore.getState().recent[SPEC_A]).toEqual([]);
+    expect(useNavigationStore.getState().isFavorite(SPEC_A, 'users/findAllUsers')).toBe(true);
+  });
+
+  it('clearRecent only affects the given spec', () => {
+    useNavigationStore.getState().recordVisit(SPEC_A, 'users/findAllUsers');
+    useNavigationStore.getState().recordVisit(SPEC_B, 'users/findAllUsers');
+
+    useNavigationStore.getState().clearRecent(SPEC_A);
+
+    expect(useNavigationStore.getState().recent[SPEC_A]).toEqual([]);
+    expect(useNavigationStore.getState().recent[SPEC_B]).toEqual(['users/findAllUsers']);
+  });
 });

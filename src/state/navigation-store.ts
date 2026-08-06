@@ -43,6 +43,8 @@ interface NavigationState extends StoredNavigation {
   isFavorite: (specUrl: string, endpointKey: EndpointKey) => boolean;
   /** Moves `endpointKey` to the front of the recent list for `specUrl`, capped at 5, deduped. */
   recordVisit: (specUrl: string, endpointKey: EndpointKey) => void;
+  /** Empties the recent list for `specUrl`. Favorites are untouched. */
+  clearRecent: (specUrl: string) => void;
 }
 
 export const useNavigationStore = create<NavigationState>((set, get) => ({
@@ -62,6 +64,12 @@ export const useNavigationStore = create<NavigationState>((set, get) => ({
     const current = get().recent[specUrl] ?? [];
     const next = [endpointKey, ...current.filter((k) => k !== endpointKey)].slice(0, MAX_RECENT);
     const recent = { ...get().recent, [specUrl]: next };
+    persist({ favorites: get().favorites, recent });
+    set({ recent });
+  },
+
+  clearRecent: (specUrl) => {
+    const recent = { ...get().recent, [specUrl]: [] };
     persist({ favorites: get().favorites, recent });
     set({ recent });
   },

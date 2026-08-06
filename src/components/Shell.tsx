@@ -46,6 +46,7 @@ export function Shell({ tagGroups, specUrl, securitySchemes = {}, servers = [] }
     <div className="relative flex h-full overflow-hidden bg-background text-foreground">
       <Sidebar
         tagGroups={tagGroups}
+        securitySchemes={securitySchemes}
         mobileOpen={sidebarOpen}
         onCloseMobile={() => setSidebarOpen(false)}
         onSearchOpen={() => setSearchOpen(true)}

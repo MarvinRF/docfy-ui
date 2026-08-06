@@ -1,18 +1,21 @@
 import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { BookOpen, ChevronDown, Clock, GitCompare, Moon, Search, Star, Sun, X } from 'lucide-react';
-import type { Endpoint, TagGroup } from '../document-model/types';
+import { BookOpen, ChevronDown, Clock, GitCompare, Lock, Moon, Search, Star, Sun, X } from 'lucide-react';
+import type { Endpoint, SecuritySchemeInfo, TagGroup } from '../document-model/types';
 import { useThemeStore } from '../state/theme-store';
 import { useSpecStore } from '../state/spec-store';
+import { useTryItStore } from '../state/try-it-store';
 import { EMPTY_KEYS, navKeyFor, useNavigationStore } from '../state/navigation-store';
 import { getConfiguredGuides } from '../lib/guides';
 import { MethodBadge } from './MethodBadge';
 import { NestLogo } from './NestLogo';
 import { SpecSwitcher } from './SpecSwitcher';
+import { AuthorizeDialog } from './AuthorizeDialog';
 import { cn } from '../lib/utils';
 
 export interface SidebarProps {
   tagGroups: TagGroup[];
+  securitySchemes?: Record<string, SecuritySchemeInfo>;
   /** Mobile off-canvas drawer state — `Shell` owns it, `Sidebar` only renders against it. */
   mobileOpen: boolean;
   onCloseMobile: () => void;
@@ -87,8 +90,9 @@ function EndpointRow({ group, endpoint, isActive, isFavorite, onToggleFavorite, 
 }
 
 /** Brand + search trigger + theme toggle + tag tree + footer — the whole left rail, mirroring the reference design's self-contained Sidebar. */
-export function Sidebar({ tagGroups, mobileOpen, onCloseMobile, onSearchOpen }: SidebarProps) {
+export function Sidebar({ tagGroups, securitySchemes = {}, mobileOpen, onCloseMobile, onSearchOpen }: SidebarProps) {
   const [collapsed, setCollapsed] = useState<Set<string>>(new Set());
+  const [authorizeOpen, setAuthorizeOpen] = useState(false);
   // `useParams()` only sees params from the nearest matching `<Route>` ancestor —
   // Sidebar sits beside `<Routes>`, not inside the `/:tag/:operationId` route, so
   // it would always read `undefined`. Compare the current path instead, which
@@ -97,12 +101,15 @@ export function Sidebar({ tagGroups, mobileOpen, onCloseMobile, onSearchOpen }: 
   const theme = useThemeStore((s) => s.theme);
   const toggleTheme = useThemeStore((s) => s.toggleTheme);
   const guides = getConfiguredGuides();
+  const authValues = useTryItStore((s) => s.authValues);
+  const hasAuthValue = Object.values(authValues).some((v) => v);
 
   const specUrl = useSpecStore((s) => s.currentUrl);
   const favoritesBySpec = useNavigationStore((s) => s.favorites);
   const recentBySpec = useNavigationStore((s) => s.recent);
   const toggleFavorite = useNavigationStore((s) => s.toggleFavorite);
   const isFavorite = useNavigationStore((s) => s.isFavorite);
+  const clearRecent = useNavigationStore((s) => s.clearRecent);
   const favoriteKeys = favoritesBySpec[specUrl] ?? EMPTY_KEYS;
   const recentKeys = recentBySpec[specUrl] ?? EMPTY_KEYS;
 
@@ -175,6 +182,21 @@ export function Sidebar({ tagGroups, mobileOpen, onCloseMobile, onSearchOpen }: 
               ⌘K
             </kbd>
           </button>
+          {Object.keys(securitySchemes).length > 0 && (
+            <button
+              type="button"
+              onClick={() => setAuthorizeOpen(true)}
+              aria-label="Authorize"
+              className={cn(
+                'relative grid size-8 shrink-0 place-items-center rounded-lg border transition-colors',
+                hasAuthValue
+                  ? 'border-primary/40 bg-primary/10 text-primary hover:bg-primary/15'
+                  : 'border-border bg-surface-sunken text-foreground hover:border-border-strong hover:bg-muted',
+              )}
+            >
+              <Lock className="size-4" />
+            </button>
+          )}
           <button
             type="button"
             onClick={toggleTheme}
@@ -222,10 +244,19 @@ export function Sidebar({ tagGroups, mobileOpen, onCloseMobile, onSearchOpen }: 
 
         {recent.length > 0 && (
           <nav aria-label="Recently viewed" className="px-3 pb-2">
-            <p className="flex items-center gap-1 px-3 pb-1 text-[10.5px] font-semibold tracking-[0.14em] text-muted-foreground uppercase">
-              <Clock aria-hidden="true" className="size-3" />
-              Recent
-            </p>
+            <div className="flex items-center justify-between gap-1 px-3 pb-1">
+              <p className="flex items-center gap-1 text-[10.5px] font-semibold tracking-[0.14em] text-muted-foreground uppercase">
+                <Clock aria-hidden="true" className="size-3" />
+                Recent
+              </p>
+              <button
+                type="button"
+                onClick={() => clearRecent(specUrl)}
+                className="text-[10.5px] text-muted-foreground transition-colors hover:text-foreground"
+              >
+                Clear
+              </button>
+            </div>
             <ul className="flex flex-col gap-0.5">
               {recent.map(({ group, endpoint }) => {
                 const href = `/${encodeURIComponent(group.name)}/${encodeURIComponent(endpointId(endpoint))}`;
@@ -341,6 +372,8 @@ export function Sidebar({ tagGroups, mobileOpen, onCloseMobile, onSearchOpen }: 
           <span className="ml-1 inline-block h-2.5 w-1 animate-blink bg-primary align-middle" />
         </div>
       </aside>
+
+      <AuthorizeDialog open={authorizeOpen} onOpenChange={setAuthorizeOpen} securitySchemes={securitySchemes} />
     </>
   );
 }
