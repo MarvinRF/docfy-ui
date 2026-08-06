@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, lazy, Suspense } from 'react';
 import { Routes, Route } from 'react-router-dom';
 import { Menu } from 'lucide-react';
 import type { SecuritySchemeInfo, TagGroup } from '../document-model/types';
@@ -6,8 +6,12 @@ import { Sidebar } from './Sidebar';
 import { SearchModal } from './SearchModal';
 import { EndpointRoute } from './EndpointRoute';
 import { EmptyState } from './EmptyState';
-import { ComparePage } from './ComparePage';
-import { GuidePage } from './GuidePage';
+
+// Split out of the main bundle: each pulls its own weight (GuidePage drags in
+// react-markdown+remark-gfm; ComparePage drags in the diff engine) and,
+// unlike EndpointRoute, neither is where most sessions land first.
+const ComparePage = lazy(() => import('./ComparePage').then((m) => ({ default: m.ComparePage })));
+const GuidePage = lazy(() => import('./GuidePage').then((m) => ({ default: m.GuidePage })));
 
 export interface ShellProps {
   tagGroups: TagGroup[];
@@ -67,27 +71,37 @@ export function Shell({ tagGroups, specUrl, securitySchemes = {}, servers = [] }
             aria-hidden="true"
             className="dot-grid pointer-events-none absolute inset-x-0 top-0 -z-10 h-72 opacity-50 mask-[linear-gradient(to_bottom,black,transparent)]"
           />
-          <Routes>
-            <Route
-              path="/guides/:slug"
-              element={
-                <GuidePage
-                  tagGroups={tagGroups}
-                  baseUrl={typeof window !== 'undefined' ? window.location.origin : ''}
-                  securitySchemes={securitySchemes}
-                  servers={servers}
-                />
-              }
-            />
-            <Route
-              path="/:tag/:operationId"
-              element={<EndpointRoute tagGroups={tagGroups} securitySchemes={securitySchemes} servers={servers} />}
-            />
-            <Route path="/compare" element={<ComparePage currentSpecUrl={specUrl} />} />
-            <Route path="*" element={<EmptyState />} />
-          </Routes>
+          <Suspense fallback={<RouteLoadingFallback />}>
+            <Routes>
+              <Route
+                path="/guides/:slug"
+                element={
+                  <GuidePage
+                    tagGroups={tagGroups}
+                    baseUrl={typeof window !== 'undefined' ? window.location.origin : ''}
+                    securitySchemes={securitySchemes}
+                    servers={servers}
+                  />
+                }
+              />
+              <Route
+                path="/:tag/:operationId"
+                element={<EndpointRoute tagGroups={tagGroups} securitySchemes={securitySchemes} servers={servers} />}
+              />
+              <Route path="/compare" element={<ComparePage currentSpecUrl={specUrl} />} />
+              <Route path="*" element={<EmptyState />} />
+            </Routes>
+          </Suspense>
         </main>
       </div>
+    </div>
+  );
+}
+
+function RouteLoadingFallback() {
+  return (
+    <div className="flex h-full min-h-[50vh] items-center justify-center">
+      <p className="text-[13px] text-muted-foreground">Loading…</p>
     </div>
   );
 }

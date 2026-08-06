@@ -62,11 +62,11 @@ describe('<Shell />', () => {
       delete (window as { __DOCFY_GUIDES__?: unknown }).__DOCFY_GUIDES__;
     });
 
-    it('renders the matched guide, not the endpoint route or empty state', () => {
+    it('renders the matched guide, not the endpoint route or empty state', async () => {
       window.__DOCFY_GUIDES__ = [{ slug: 'getting-started', title: 'Getting Started', content: '# Hello Guide' }];
       renderShell('/guides/getting-started');
 
-      expect(screen.getByRole('heading', { level: 1, name: 'Hello Guide' })).toBeInTheDocument();
+      expect(await screen.findByRole('heading', { level: 1, name: 'Hello Guide' })).toBeInTheDocument();
       expect(screen.queryByText(/select an endpoint/i)).not.toBeInTheDocument();
     });
   });
