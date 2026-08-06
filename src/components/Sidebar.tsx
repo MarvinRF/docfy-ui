@@ -134,6 +134,23 @@ export function Sidebar({ tagGroups, securitySchemes = {}, mobileOpen, onCloseMo
     });
   }
 
+  /**
+   * ↑/↓ moves focus between the sidebar's nav links (Favorites, Recent, Guides, the tag tree,
+   * Compare specs), in DOM order — collapsed groups naturally drop out since their `<ul>` isn't
+   * rendered. Only acts when focus is already on one of those links, so it can't steal arrow keys
+   * meant for something else (e.g. a button). Enter/navigation itself needs no handling — that's
+   * native `<a>` behavior.
+   */
+  function handleNavKeyDown(e: React.KeyboardEvent<HTMLElement>) {
+    if (e.key !== 'ArrowDown' && e.key !== 'ArrowUp') return;
+    const links = Array.from(e.currentTarget.querySelectorAll<HTMLAnchorElement>('a[href]'));
+    const currentIndex = links.indexOf(document.activeElement as HTMLAnchorElement);
+    if (currentIndex === -1) return;
+    e.preventDefault();
+    const nextIndex = e.key === 'ArrowDown' ? currentIndex + 1 : currentIndex - 1;
+    links[Math.max(0, Math.min(links.length - 1, nextIndex))]?.focus();
+  }
+
   return (
     <>
       {mobileOpen && (
@@ -146,6 +163,7 @@ export function Sidebar({ tagGroups, securitySchemes = {}, mobileOpen, onCloseMo
       )}
 
       <aside
+        onKeyDown={handleNavKeyDown}
         className={cn(
           'fixed inset-y-0 left-0 z-40 flex h-full w-[280px] flex-col border-r border-border bg-surface shadow-warm-lg transition-transform duration-300 ease-out lg:static lg:z-auto lg:translate-x-0 lg:shadow-none',
           mobileOpen ? 'translate-x-0' : '-translate-x-full',

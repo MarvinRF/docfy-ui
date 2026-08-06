@@ -278,6 +278,76 @@ describe('<Sidebar />', () => {
     });
   });
 
+  describe('Keyboard navigation', () => {
+    function groups(): TagGroup[] {
+      return [
+        {
+          name: 'users',
+          description: undefined,
+          endpoints: [
+            makeEndpoint({ operationId: 'findAllUsers' }),
+            makeEndpoint({ operationId: 'createUser', path: '/users' }),
+          ],
+        },
+        {
+          name: 'orders',
+          description: undefined,
+          endpoints: [makeEndpoint({ operationId: 'findAllOrders', path: '/orders', tags: ['orders'] })],
+        },
+      ];
+    }
+
+    it('ArrowDown moves focus to the next link, across groups', async () => {
+      const user = userEvent.setup();
+      renderSidebar(groups());
+
+      const links = screen.getAllByRole('link');
+      links[0].focus();
+      expect(links[0]).toHaveFocus();
+
+      await user.keyboard('{ArrowDown}');
+      expect(links[1]).toHaveFocus();
+
+      await user.keyboard('{ArrowDown}');
+      expect(links[2]).toHaveFocus();
+    });
+
+    it('ArrowUp moves focus to the previous link', async () => {
+      const user = userEvent.setup();
+      renderSidebar(groups());
+
+      const links = screen.getAllByRole('link');
+      links[2].focus();
+
+      await user.keyboard('{ArrowUp}');
+      expect(links[1]).toHaveFocus();
+    });
+
+    it('clamps at the first/last link instead of wrapping or throwing', async () => {
+      const user = userEvent.setup();
+      renderSidebar(groups());
+
+      const links = screen.getAllByRole('link');
+      links[0].focus();
+      await user.keyboard('{ArrowUp}');
+      expect(links[0]).toHaveFocus();
+
+      links[links.length - 1].focus();
+      await user.keyboard('{ArrowDown}');
+      expect(links[links.length - 1]).toHaveFocus();
+    });
+
+    it('does nothing when focus is not already on a nav link', async () => {
+      const user = userEvent.setup();
+      renderSidebar(groups());
+
+      const searchButton = screen.getByRole('button', { name: /search/i });
+      searchButton.focus();
+      await user.keyboard('{ArrowDown}');
+      expect(searchButton).toHaveFocus();
+    });
+  });
+
   describe('Authorize', () => {
     afterEach(() => {
       useTryItStore.setState({ authValues: {}, requests: {} });
