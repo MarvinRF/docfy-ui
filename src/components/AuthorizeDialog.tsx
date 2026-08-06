@@ -60,7 +60,7 @@ export function AuthorizeDialog({ open, onOpenChange, securitySchemes }: Authori
                       value={authValues[name] ?? ''}
                       onChange={(e) => setAuthValue(name, e.target.value)}
                       placeholder={scheme.type === 'http' && scheme.scheme === 'basic' ? 'user:pass' : 'value'}
-                      className="rounded-md border border-border bg-surface-sunken px-2 py-1.5 font-mono text-[12.5px] text-foreground outline-none focus:border-primary/60"
+                      className="rounded-md border border-border bg-surface-sunken px-2 py-1.5 font-mono text-[12.5px] text-foreground outline-none focus:border-primary/60 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1"
                     />
                   )}
                 </label>

@@ -1,7 +1,7 @@
 /** NestJS mark, sourced from the docs site favicon (docfy-kit-core/public/favicon.svg). */
 export function NestLogo({ className }: { className?: string }) {
   return (
-    <svg viewBox="0 0 96 96" fill="none" xmlns="http://www.w3.org/2000/svg" className={className}>
+    <svg aria-hidden="true" viewBox="0 0 96 96" fill="none" xmlns="http://www.w3.org/2000/svg" className={className}>
       <path
         fill="currentColor"
         transform="translate(20.5,20.5) scale(0.573)"

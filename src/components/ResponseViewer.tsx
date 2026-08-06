@@ -136,9 +136,11 @@ export function ResponseViewer({ responses, endpointKey, securitySchemes = {} }:
           <span className="px-2 text-[10.5px] font-semibold uppercase tracking-wider text-muted-foreground">
             Response
           </span>
-          <div className="ml-auto flex items-center gap-1">
+          <div role="tablist" aria-label="Response status" className="ml-auto flex items-center gap-1">
             <button
               type="button"
+              role="tab"
+              aria-selected={true}
               onClick={() => setStatus(LIVE_TAB)}
               className={cn('rounded-md px-2 py-1 font-mono text-[11px] transition-colors', liveStatusClass)}
             >
@@ -148,6 +150,8 @@ export function ResponseViewer({ responses, endpointKey, securitySchemes = {} }:
               <button
                 key={r.status}
                 type="button"
+                role="tab"
+                aria-selected={false}
                 onClick={() => setStatus(r.status)}
                 className="rounded-md px-2 py-1 font-mono text-[11px] text-muted-foreground transition-colors hover:bg-muted"
               >
@@ -191,10 +195,12 @@ export function ResponseViewer({ responses, endpointKey, securitySchemes = {} }:
         <span className="px-2 text-[10.5px] font-semibold uppercase tracking-wider text-muted-foreground">
           Response
         </span>
-        <div className="ml-auto flex items-center gap-1">
+        <div role="tablist" aria-label="Response status" className="ml-auto flex items-center gap-1">
           {liveResult && (
             <button
               type="button"
+              role="tab"
+              aria-selected={false}
               onClick={() => setStatus(LIVE_TAB)}
               className="rounded-md px-2 py-1 font-mono text-[11px] text-muted-foreground transition-colors hover:bg-muted"
             >
@@ -205,6 +211,8 @@ export function ResponseViewer({ responses, endpointKey, securitySchemes = {} }:
             <button
               key={r.status}
               type="button"
+              role="tab"
+              aria-selected={r.status === active.status}
               onClick={() => setStatus(r.status)}
               className={cn(
                 'rounded-md px-2 py-1 font-mono text-[11px] transition-colors',

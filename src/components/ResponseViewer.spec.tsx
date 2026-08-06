@@ -279,6 +279,21 @@ describe('<ResponseViewer />', () => {
     expect(container.querySelector('code')?.textContent).toMatch(/"id": "string"/);
   });
 
+  it('exposes the status switcher as a tablist, with aria-selected on the active status', () => {
+    render(
+      <ResponseViewer
+        responses={[
+          { status: '200', description: 'OK', contentType: undefined, schema: undefined },
+          { status: '404', description: 'Not Found', contentType: undefined, schema: undefined },
+        ]}
+      />,
+    );
+
+    expect(screen.getByRole('tablist', { name: 'Response status' })).toBeInTheDocument();
+    expect(screen.getByRole('tab', { name: '200' })).toHaveAttribute('aria-selected', 'true');
+    expect(screen.getByRole('tab', { name: '404' })).toHaveAttribute('aria-selected', 'false');
+  });
+
   it('switches the body when a different status tab is clicked', async () => {
     const user = userEvent.setup();
     const { container } = render(

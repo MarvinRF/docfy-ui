@@ -152,7 +152,7 @@ export function ComparePage({ currentSpecUrl }: ComparePageProps) {
             value={oldUrl}
             onChange={(e) => setOldUrl(e.target.value)}
             placeholder="https://old-deploy.example.com/api-json"
-            className="rounded-md border border-border bg-surface px-3 py-1.5 font-mono text-[13px] text-foreground outline-none focus:border-primary"
+            className="rounded-md border border-border bg-surface px-3 py-1.5 font-mono text-[13px] text-foreground outline-none focus:border-primary focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1"
           />
         </label>
         <label className="flex flex-col gap-1 text-[13px] text-muted-foreground">
@@ -162,7 +162,7 @@ export function ComparePage({ currentSpecUrl }: ComparePageProps) {
             value={newUrl}
             onChange={(e) => setNewUrl(e.target.value)}
             placeholder="/api-json"
-            className="rounded-md border border-border bg-surface px-3 py-1.5 font-mono text-[13px] text-foreground outline-none focus:border-primary"
+            className="rounded-md border border-border bg-surface px-3 py-1.5 font-mono text-[13px] text-foreground outline-none focus:border-primary focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1"
           />
         </label>
         <Button type="submit" className="self-start" disabled={state.status === 'loading'}>

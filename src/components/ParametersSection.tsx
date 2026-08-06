@@ -24,6 +24,7 @@ export function ParametersSection({ parameters }: ParametersSectionProps) {
 
   return (
     <div>
+      <h2 className="mb-3 text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">Parameters</h2>
       {groups.map((group) => (
         <div key={group.kind} className="mb-6">
           <h3 className="mb-2 text-[10.5px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">

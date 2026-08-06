@@ -29,6 +29,7 @@ AI-first OpenAPI documentation UI, a companion project to [nestjs-docfy](https:/
 - [Guides](#guides)
 - [Document Model](#document-model)
 - [Theming](#theming)
+- [Accessibility](#accessibility)
 - [Architecture notes](#architecture-notes)
 - [Scripts](#scripts)
 - [Testing](#testing)
@@ -249,6 +250,14 @@ Dark/light theming is token-driven and reload-free:
 - `src/styles/tokens.ts`: `getThemeTokens(theme)` / `deriveSurfaceTokens(bg, text)`, a small fixed set of base tokens (background, text, accent) plus derived surface/border tokens, obtained by mixing `bg` toward `text` and never introducing a new hue.
 - `src/styles/apply-theme.ts`: writes the resulting CSS custom properties and `data-theme` onto `<html>`; switching themes only changes variable values, no re-render of the component tree is required.
 - `src/state/theme-store.ts`: a Zustand store that persists the chosen theme to `localStorage` and applies it synchronously before first paint (no flash of the wrong theme).
+
+## Accessibility
+
+- **Visible focus indicator on every interactive element** (WCAG 2.4.7): a global `:focus-visible` outline using the `--ring` design token (already existed, was never actually used before this) covers every plain button/link automatically. Elements that opt out of the native outline for a custom focus treatment (text inputs, the spec switcher `<select>`, the search command palette's input) get their own `focus-visible:ring-2 focus-visible:ring-ring` on top, via a box-shadow-based ring so it doesn't conflict with `outline-none`.
+- **Response/status switchers are real tabs**: `ResponseViewer`'s status-code buttons and "Live" tab use `role="tablist"`/`role="tab"`/`aria-selected`, matching the pattern `RequestPanel`'s Code/Try it out and language switchers already used — a screen reader now announces these as a tab group with a current selection, not an unordered row of buttons.
+- **Heading hierarchy**: the endpoint detail page is a clean `h1 → h2 → h2 → h2` (title, Parameters, Request Body, Responses) — `ParametersSection` previously had no heading of its own above its Path/Query/Headers `h3` groups, which skipped straight from `h1` to `h3`.
+- **Keyboard-only navigation**: every action reachable by mouse — auth, favorites, search, spec switching, sidebar navigation (see [Favorites and recently viewed](#favorites-and-recently-viewed) for the ↑/↓ shortcut) — is reachable by keyboard alone, with no traps (dialogs are Radix primitives, which handle focus trapping/return correctly).
+- **Color contrast**: both themes' body/muted text pass WCAG AA comfortably (muted-foreground ≥ 5.0:1, primary text ≥ 15:1 against their respective backgrounds in both light and dark) — verified by converting the OKLCH design tokens to sRGB and computing actual contrast ratios, not eyeballing it.
 
 ## Architecture notes
 

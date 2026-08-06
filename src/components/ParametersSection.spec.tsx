@@ -14,6 +14,11 @@ describe('<ParametersSection />', () => {
     expect(container.firstChild).toBeNull();
   });
 
+  it('renders an h2 "Parameters" heading above the Path/Query/Headers h3 groups', () => {
+    render(<ParametersSection parameters={[makeParam({ name: 'id', in: 'path', required: true })]} />);
+    expect(screen.getByRole('heading', { level: 2, name: 'Parameters' })).toBeInTheDocument();
+  });
+
   it('groups parameters under Path/Query/Headers section labels', () => {
     render(
       <ParametersSection

@@ -81,9 +81,9 @@ export function EndpointDetail({ endpoint, baseUrl, securitySchemes = {}, server
 
       {/* On narrow screens, show the playground panel below the content for endpoints. */}
       <div className="mx-auto max-w-240 px-5 pb-16 xl:hidden">
-        <h3 className="mb-3 text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+        <h2 className="mb-3 text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
           Code examples
-        </h3>
+        </h2>
         <div className="flex flex-col gap-4">
           <RequestPanel endpoint={endpoint} baseUrl={baseUrl} securitySchemes={securitySchemes} servers={servers} />
           <ResponseViewer responses={endpoint.responses} endpointKey={endpointKey} securitySchemes={securitySchemes} />

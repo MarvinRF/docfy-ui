@@ -70,7 +70,7 @@ export function TryItForm({ endpoint, baseUrl, securitySchemes, servers = [] }: 
           type="text"
           value={baseUrlOverride ?? defaultBaseUrl}
           onChange={(e) => setBaseUrlOverride(endpointKey, e.target.value)}
-          className="rounded-md border border-white/10 bg-black/20 px-2 py-1 font-mono text-xs text-terminal-fg outline-none focus:border-primary/60"
+          className="rounded-md border border-white/10 bg-black/20 px-2 py-1 font-mono text-xs text-terminal-fg outline-none focus:border-primary/60 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1"
         />
       </label>
 
@@ -87,7 +87,7 @@ export function TryItForm({ endpoint, baseUrl, securitySchemes, servers = [] }: 
                 type="text"
                 value={paramValues[param.name] ?? ''}
                 onChange={(e) => setParamValue(endpointKey, param.name, e.target.value)}
-                className="rounded-md border border-white/10 bg-black/20 px-2 py-1 font-mono text-xs text-terminal-fg outline-none focus:border-primary/60"
+                className="rounded-md border border-white/10 bg-black/20 px-2 py-1 font-mono text-xs text-terminal-fg outline-none focus:border-primary/60 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1"
               />
             </label>
           ))}
@@ -101,7 +101,7 @@ export function TryItForm({ endpoint, baseUrl, securitySchemes, servers = [] }: 
             value={effectiveBodyText}
             onChange={(e) => setBodyText(endpointKey, e.target.value)}
             rows={6}
-            className="rounded-md border border-white/10 bg-black/20 px-2 py-1 font-mono text-xs text-terminal-fg outline-none focus:border-primary/60"
+            className="rounded-md border border-white/10 bg-black/20 px-2 py-1 font-mono text-xs text-terminal-fg outline-none focus:border-primary/60 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1"
           />
         </label>
       )}

@@ -40,7 +40,7 @@ export function AuthPanel({ security, securitySchemes }: AuthPanelProps) {
                 value={authValues[name] ?? ''}
                 onChange={(e) => setAuthValue(name, e.target.value)}
                 placeholder={scheme.type === 'http' && scheme.scheme === 'basic' ? 'user:pass' : 'value'}
-                className="rounded-md border border-white/10 bg-black/20 px-2 py-1 font-mono text-xs text-terminal-fg outline-none focus:border-primary/60"
+                className="rounded-md border border-white/10 bg-black/20 px-2 py-1 font-mono text-xs text-terminal-fg outline-none focus:border-primary/60 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1"
               />
             )}
           </label>

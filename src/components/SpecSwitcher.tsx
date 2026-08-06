@@ -19,7 +19,7 @@ export function SpecSwitcher() {
         aria-label="Switch spec"
         value={currentUrl}
         onChange={(e) => setCurrentUrl(e.target.value)}
-        className="w-full appearance-none rounded-lg border border-border bg-surface-sunken px-2.5 py-1.5 pr-7 text-[12.5px] text-foreground outline-none transition-colors hover:border-border-strong"
+        className="w-full appearance-none rounded-lg border border-border bg-surface-sunken px-2.5 py-1.5 pr-7 text-[12.5px] text-foreground outline-none transition-colors hover:border-border-strong focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1"
       >
         {specs.map((spec) => (
           <option key={spec.url} value={spec.url}>
