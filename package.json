@@ -8,6 +8,9 @@
   ],
   "author": "Marvin Rocha",
   "license": "MIT",
+  "publishConfig": {
+    "provenance": true
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/MarvinRF/docfy-ui.git"
