@@ -1,3 +1,23 @@
+# [0.11.0](https://github.com/MarvinRF/docfy-ui/compare/v0.10.0...v0.11.0) (2026-08-07)
+
+
+### Bug Fixes
+
+* **deps:** bump fast-uri and js-yaml, 2 high-severity CVEs; fix SECURITY.md formatting ([78d75ed](https://github.com/MarvinRF/docfy-ui/commit/78d75ede828b06848a23a396d1a0fad123c0ceea))
+* **ui:** accessibility audit — focus visibility, tab semantics, heading order ([d5c5ba3](https://github.com/MarvinRF/docfy-ui/commit/d5c5ba3b1bd5361319bee5dc06f1c13be708fc41))
+
+
+### Features
+
+* **ui:** arrow-key navigation between sidebar links ([b2c5a19](https://github.com/MarvinRF/docfy-ui/commit/b2c5a193bdb1ad2916d32d14c04f533c16c780bf))
+* **ui:** favorite endpoints and recently-viewed sidebar sections ([9f2089b](https://github.com/MarvinRF/docfy-ui/commit/9f2089bd9b8e582acf88c162fc84b254489979ee))
+* **ui:** global Authorize dialog and Clear button for Recent ([a0744c8](https://github.com/MarvinRF/docfy-ui/commit/a0744c830da908316d46617d3f8eb2033ec1c7f3))
+
+
+### Performance Improvements
+
+* **ui:** code-split GuidePage and ComparePage routes ([aa5bce0](https://github.com/MarvinRF/docfy-ui/commit/aa5bce0d7bf4aa10a8b3c9d7db69b163a4ffb6db))
+
 # [0.10.0](https://github.com/MarvinRF/docfy-ui/compare/v0.9.0...v0.10.0) (2026-08-03)
 
 
