@@ -1,3 +1,10 @@
+# [0.12.0](https://github.com/MarvinRF/docfy-ui/compare/v0.11.1...v0.12.0) (2026-11-18)
+
+
+### Features
+
+* **host-config:** read host config from a JSON data block and show security notices ([0eb93bb](https://github.com/MarvinRF/docfy-ui/commit/0eb93bb1c24a5465b2debb7dd48b0028cc256781))
+
 ## [0.11.1](https://github.com/MarvinRF/docfy-ui/compare/v0.11.0...v0.11.1) (2026-11-18)
 
 
