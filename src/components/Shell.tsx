@@ -6,6 +6,7 @@ import { Sidebar } from './Sidebar';
 import { SearchModal } from './SearchModal';
 import { EndpointRoute } from './EndpointRoute';
 import { EmptyState } from './EmptyState';
+import { SecurityNotices } from './SecurityNotices';
 
 // Split out of the main bundle: each pulls its own weight (GuidePage drags in
 // react-markdown+remark-gfm; ComparePage drags in the diff engine) and,
@@ -66,6 +67,8 @@ export function Shell({ tagGroups, specUrl, securitySchemes = {}, servers = [] }
           <span className="font-mono text-[11.5px] text-muted-foreground">Nest Docfy</span>
           <span className="w-7" />
         </div>
+
+        <SecurityNotices />
 
         <main className="themed-scroll relative flex-1 overflow-y-auto p-4 sm:p-6">
           <div

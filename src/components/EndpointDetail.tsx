@@ -37,7 +37,7 @@ export function EndpointDetail({ endpoint, baseUrl, securitySchemes = {}, server
   const activeTarget = parseSchemaAnchorHash(hash) ?? undefined;
   // `window.location.href` is exactly this endpoint's canonical URL — this
   // component only ever renders from EndpointRoute, which already resolved
-  // the current route to this exact endpoint, basename (window.__DOCFY_BASE_PATH__)
+  // the current route to this exact endpoint, basename (the host-injected base path)
   // included. Reconstructing it from tag/operationId here would duplicate
   // that logic and risk drifting out of sync with it.
   const mcpReference = `${endpoint.method} ${endpoint.path}\n${typeof window !== 'undefined' ? window.location.href : baseUrl}`;

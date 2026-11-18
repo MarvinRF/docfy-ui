@@ -30,6 +30,7 @@ AI-first OpenAPI documentation UI, a companion project to [nestjs-docfy](https:/
 - [Document Model](#document-model)
 - [Theming](#theming)
 - [Accessibility](#accessibility)
+- [Security](#security)
 - [Architecture notes](#architecture-notes)
 - [Scripts](#scripts)
 - [Testing](#testing)
@@ -175,7 +176,7 @@ Every endpoint's request panel has a **Code / Try it out** mode switch, next to 
 - **"Use as … token"**: when a successful Live response contains a token-shaped field (e.g. a login endpoint's `access_token`, including nested under an envelope like `data.access_token`), a button lets you reuse it as the Bearer credential for the rest of the session with one click — no manual copy/paste.
 - **Copy as curl**: sits next to "Send" — builds the exact `curl` command "Try it out" is about to fire, sharing `buildRequestUrl()`/`applyAuth()` with the real request so the two can never drift apart. Unlike the static "Code" tab snippets (which use placeholder `name=type` tokens and never see auth), this reflects whatever you actually typed into the form.
 - **Schema match badge**: on the "Live" tab, when the response status has a declared schema and the body parsed as JSON, a green **"✓ Matches schema"** or red **"⚠ N schema mismatches"** badge appears (hover for each offending path/reason) — via `docfy-core`'s `validateAgainstSchema()`. Catches contract drift (missing/renamed field, wrong type) at request time, not just in CI.
-- **CORS**: by default this is a direct `fetch()` from the browser to the target, so it's subject to the target API's own CORS policy — same constraint as [Configuration](#configuration) above. When `nestjs-docfy`'s `DocfyUiModule.setup()` is configured with `openApiDocument` (see [its README](https://github.com/MarvinRF/nest-docfy#docfyuimodulesetupmountpath-app-options)), `docfy-ui` detects the injected `window.__DOCFY_PROXY_PATH__` and routes the request through a same-origin server-side proxy instead, sidestepping CORS entirely for whatever origins the OpenAPI document declares in `servers[]`.
+- **CORS**: by default this is a direct `fetch()` from the browser to the target, so it's subject to the target API's own CORS policy — same constraint as [Configuration](#configuration) above. When `nestjs-docfy`'s `DocfyUiModule.setup()` is configured with `openApiDocument` (see [its README](https://github.com/MarvinRF/nest-docfy#docfyuimodulesetupmountpath-app-options)), `docfy-ui` detects the injected proxy path and routes the request through a same-origin server-side proxy instead, sidestepping CORS entirely for whatever origins the OpenAPI document declares in `servers[]`.
 
 Out of scope, deliberately: request history, multiple named environments, a full OAuth2 authorization-code/PKCE flow, and cookie-based auth (can't be set reliably cross-site from the browser).
 
@@ -258,6 +259,20 @@ Dark/light theming is token-driven and reload-free:
 - **Heading hierarchy**: the endpoint detail page is a clean `h1 → h2 → h2 → h2` (title, Parameters, Request Body, Responses) — `ParametersSection` previously had no heading of its own above its Path/Query/Headers `h3` groups, which skipped straight from `h1` to `h3`.
 - **Keyboard-only navigation**: every action reachable by mouse — auth, favorites, search, spec switching, sidebar navigation (see [Favorites and recently viewed](#favorites-and-recently-viewed) for the ↑/↓ shortcut) — is reachable by keyboard alone, with no traps (dialogs are Radix primitives, which handle focus trapping/return correctly).
 - **Color contrast**: both themes' body/muted text pass WCAG AA comfortably (muted-foreground ≥ 5.0:1, primary text ≥ 15:1 against their respective backgrounds in both light and dark) — verified by converting the OKLCH design tokens to sRGB and computing actual contrast ratios, not eyeballing it.
+
+## Security
+
+- **CSP-ready.** The build ships no inline scripts. Host configuration is read
+  from a `<script type="application/json" id="docfy-config">` data block, which
+  browsers never execute, so the UI runs under `script-src 'self'`. Inline
+  `style` attributes (Radix positioning) still need `style-src 'self'
+'unsafe-inline'`. `nestjs-docfy` 0.19+ sends that policy for you. Older hosts
+  that inject `window.__DOCFY_*__` globals keep working.
+- **Security notices.** When `nestjs-docfy` detects a risky setup outside
+  production (for example a "Try it out" proxy with no authorization), the UI
+  shows a dismissible banner listing it. Production deployments never show it.
+- **No runtime dependencies.** The package ships only its prebuilt `dist`; it
+  adds nothing to your production `node_modules` beyond itself.
 
 ## Architecture notes
 

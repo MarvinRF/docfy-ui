@@ -1,17 +1,17 @@
 import type { Endpoint, SecuritySchemeInfo } from '../document-model/types';
 import type { TryItResult } from '../state/try-it-store';
+import { getHostConfig } from '../lib/host-config';
 
 const NETWORK_ERROR_MESSAGE =
   'Request failed to reach the server. This usually means the API does not allow requests from this origin (CORS), or the server is unreachable.';
 
 const PROXY_ERROR_HEADER = 'x-docfy-proxy-error';
 
-/** `window.__DOCFY_PROXY_PATH__` injected by `DocfyUiModule.setup({ openApiDocument })` — same
+/** Proxy path injected by `DocfyUiModule.setup({ openApiDocument })` — same
  * pattern as `getConfiguredSpecs()` in `state/spec-store.ts`, just read fresh per request instead
  * of cached, since it never changes after the page loads. */
 export function getConfiguredProxyPath(): string | undefined {
-  if (typeof window === 'undefined') return undefined;
-  return window.__DOCFY_PROXY_PATH__;
+  return getHostConfig().proxyPath;
 }
 
 /** Substitutes `{param}` path tokens and appends filled query params. Path/query params not present in `paramValues` are skipped. */

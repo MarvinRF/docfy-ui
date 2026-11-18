@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { getHostConfig } from '../lib/host-config';
 
 export interface SpecOption {
   name: string;
@@ -6,8 +7,7 @@ export interface SpecOption {
 }
 
 export function getConfiguredSpecs(): SpecOption[] {
-  if (typeof window === 'undefined') return [];
-  return window.__DOCFY_SPECS__ ?? [];
+  return getHostConfig().specs ?? [];
 }
 
 /**

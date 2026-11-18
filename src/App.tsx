@@ -2,15 +2,15 @@ import { BrowserRouter } from 'react-router-dom';
 import { useOpenApiSpec } from './hooks/use-openapi-spec';
 import { useSpecStore } from './state/spec-store';
 import { Shell } from './components/Shell';
+import { getHostConfig } from './lib/host-config';
 
 /**
- * Mount prefix the host server injected via `window.__DOCFY_BASE_PATH__`
+ * Mount prefix the host server injected (see `getHostConfig()`)
  * (see DocfyUiModule.setup). Falls back to '/' when served standalone
  * (e.g. `vite dev`) so BrowserRouter behaves as before in that case.
  */
 function getBasename(): string {
-  if (typeof window === 'undefined') return '/';
-  return window.__DOCFY_BASE_PATH__ ?? '/';
+  return getHostConfig().basePath ?? '/';
 }
 
 export function App() {
