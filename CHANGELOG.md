@@ -1,3 +1,11 @@
+## [0.11.1](https://github.com/MarvinRF/docfy-ui/compare/v0.11.0...v0.11.1) (2026-11-18)
+
+
+### Bug Fixes
+
+* **deps:** declare bundled packages as devDependencies ([7c58b88](https://github.com/MarvinRF/docfy-ui/commit/7c58b883676177a84f34b37652449d0ee89a6343))
+* **deps:** refresh lockfile for fast-uri and js-yaml advisories ([2202ef8](https://github.com/MarvinRF/docfy-ui/commit/2202ef86c0b341e8d5a823a86907a78f7d8510d0)), closes [hi#severity](https://github.com/hi/issues/severity)
+
 # [0.11.0](https://github.com/MarvinRF/docfy-ui/compare/v0.10.0...v0.11.0) (2026-08-07)
 
 
